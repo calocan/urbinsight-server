@@ -4,12 +4,16 @@ from django.db.models import (
 from django.contrib.postgres.fields import JSONField
 
 
+def default():
+    return dict()
+
 class Region(Model):
     """
         Models a geospatial region
     """
+
     name = CharField(max_length=50, unique=True, null=False)
-    data = JSONField(null=False, default=lambda: dict())
+    data = JSONField(null=False, default=default)
 
     class Meta:
         app_label = "app"
