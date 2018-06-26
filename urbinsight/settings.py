@@ -112,7 +112,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('URBINSIGHT_DB_NAME', 'urbinsight'),
         'USER': os.environ.get('URBINSIGHT_DB_USER', 'urbuser'),
-        'PASSWORD': os.environ.get('SOP_DB_PASS', ''),
+        'PASSWORD': os.environ.get('URBINSIGHT_DB_PASS', ''),
         'HOST': os.environ.get('URBINSIGHT_DB_HOST'),
         'PORT': os.environ.get('URBINSIGHT_DB_PORT', ''),
     },
@@ -130,7 +130,7 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'sop.web.CsrfExemptSessionAuthentication',
+        'urbinsight.CsrfExemptSessionAuthentication',
         'rest_framework.authentication.BasicAuthentication'
     ),
     'DEFAULT_PERMISSION_CLASSES': (

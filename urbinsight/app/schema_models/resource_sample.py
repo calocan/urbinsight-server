@@ -1,0 +1,2 @@
+BELGIUM_SAMPLE_DATA = {
+}
