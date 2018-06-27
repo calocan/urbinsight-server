@@ -20,5 +20,5 @@ app_name = "urbinsight"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    url(r'^api/', include('urbinsight.app.urls'))
+    url(r'^api/', include('app.urls'))
 ]

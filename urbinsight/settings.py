@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'urbinsight.app'
+    'app'
 ]
 
 MIDDLEWARE = [
@@ -205,7 +205,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 GRAPHENE = {
-    'SCHEMA': 'urbninsight.app.schema.schema',
+    'SCHEMA': 'app.schema.schema',
     'MIDDLEWARE': [
         'graphene_django.debug.DjangoDebugMiddleware',
     ]

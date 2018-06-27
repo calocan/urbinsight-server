@@ -4,7 +4,7 @@ import rescape_graphene.ramda as R
 from app.schema_models.data_schema import ResourceDataType, resource_data_fields
 from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
 from graphene_django.types import DjangoObjectType
-from urbinsight.app.models import Resource
+from app.models import Resource
 from rescape_graphene.schema_helpers import input_type_fields, REQUIRE, DENY, CREATE, \
     input_type_parameters_for_update_or_create, UPDATE, \
     guess_update_or_create, graphql_update_or_create, graphql_query, merge_with_django_properties
