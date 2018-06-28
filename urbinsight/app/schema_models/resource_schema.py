@@ -1,10 +1,8 @@
-from collections import namedtuple
-
-import rescape_graphene.ramda as R
 from app.schema_models.data_schema import ResourceDataType, resource_data_fields
 from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
 from graphene_django.types import DjangoObjectType
 from app.models import Resource
+from rescape_graphene import resolver
 from rescape_graphene.schema_helpers import input_type_fields, REQUIRE, DENY, CREATE, \
     input_type_parameters_for_update_or_create, UPDATE, \
     guess_update_or_create, graphql_update_or_create, graphql_query, merge_with_django_properties
@@ -15,26 +13,10 @@ class ResourceType(DjangoObjectType):
         model = Resource
 
 
-def resolver(resource, context):
-    """
-        Resolver for the data field. This extracts the desired json fields from the context
-        and creates a tuple of the field values. Graphene has no built in way for querying json types
-    :param resource:
-    :param context:
-    :return:
-    """
-    selections = R.map(lambda sel: sel.name.value, context.field_asts[0].selection_set.selections)
-    all_selections = R.filter(
-        lambda key: key in resource.data, selections
-    )
-    dct = R.pick(all_selections, resource.data)
-    return namedtuple('DataTuple', R.keys(dct))(*R.values(dct))
-
-
 # Modify data field to use the resolver.
 # I guess there's no way to specify a resolver upon field creation, since graphene just reads the underlying
 # Django model to generate the fields
-ResourceType._meta.fields['data'] = Field(Resource, resolver=resolver)
+ResourceType._meta.fields['data'] = Field(ResourceDataType, resolver=resolver)
 
 resource_fields = merge_with_django_properties(ResourceType, dict(
     id=dict(create=DENY, update=REQUIRE),
@@ -85,4 +67,4 @@ class UpdateResource(UpsertResource):
 
 
 graphql_update_or_create_resource = graphql_update_or_create(resource_mutation_config, resource_fields)
-graphql_query_resources = graphql_query('dataPoints', resource_fields)
+graphql_query_resources = graphql_query('resources', resource_fields)

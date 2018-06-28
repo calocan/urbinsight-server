@@ -7,6 +7,7 @@ from django.contrib.postgres.fields import JSONField
 def default():
     return dict()
 
+
 class Region(Model):
     """
         Models a geospatial region
