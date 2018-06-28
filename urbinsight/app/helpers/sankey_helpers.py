@@ -16,7 +16,7 @@ def aberrate_location(index, location, factor=.005):
     return [coord + factor * (-index if index % 2 else index) * (i or -1) for coord, i in enumerate(location)]
 
 
-def create_nodes(columns):
+def create_raw_nodes(columns):
     """
         Creates nodes for each column from the csv
     :param columns:
@@ -65,16 +65,16 @@ def create_links(stages, value_key, nodes_by_stages):
         # Get the current stage as the source
         sources = nodes_by_stages[stage.key]
         if not sources:
-            return [];
+            return []
         # Iterate through the stages until one with nodes is found
-        targetStage = R.find(
+        target_stage = R.find(
             lambda stage: nodes_by_stages[stage.key],
             stages[i + 1, R.length(stages)]
         )
         # If no more stages contain nodes, we're done
-        if not targetStage:
-            return [];
-        targets = nodes_by_stages[targetStage.key]
+        if not target_stage:
+            return []
+        targets = nodes_by_stages[target_stage.key]
         return R.chain(lambda source:
                        R.map(lambda target:
                              dict(
@@ -89,15 +89,20 @@ def create_links(stages, value_key, nodes_by_stages):
     return [process_stage(stage, i) for stage, i in enumerate(stages)]
 
 
-@R.curry
-def resource_to_nodes_and_links(settings, accumulated_graph, resource):
+def generate_sankey_data(resource):
+    """
+        Generates nodes and links for the given Resrouce object
+    :param resource:  Resource object
+    :return: A dict containing nodes and links. nodes are a dict key by stage name
+        Results can be assigned to resource.data.sankey and saved
+    """
+
+    settings = resource.settings
     stages = settings.stages
     stage_key = settings.stage_key
     value_key = settings.value_key
     node_name_key = settings.node_name_key
     default_location = settings.default_location
-    # The number of nodes
-    node_count = R.length(accumulated_graph.nodes) or 0
     # A dct of stages by name
     stage_by_name = stages_by_name(stages)
 
@@ -129,7 +134,6 @@ def resource_to_nodes_and_links(settings, accumulated_graph, resource):
                             R.merge(
                                 node,
                                 dict(
-                                    index=i + node_count,
                                     material=resource.material,
                                     value=float(node[value_key]),
                                     type='Feature',
@@ -148,29 +152,68 @@ def resource_to_nodes_and_links(settings, accumulated_graph, resource):
         )
 
     # Reduce the nodes
-    nodes_by_stages = R.reduce(
+    nodes_by_stage = R.reduce(
         lambda accum, node_and_i: accumulate_nodes(accum, node_and_i[0], node_and_i[1]),
         {},
         enumerate(resource.nodes)
     )
-
-    # Combine the nodes and link with previous accumulated_graph nodes and links
     return dict(
-        nodes=R.concat(R.prop_or([], 'nodes', accumulated_graph), [R.flatten(R.values(nodes_by_stages))]),
-        # Naively create a link between every node of consecutive stages
-        links=R.concat(R.prop_or([], 'links', accumulated_graph), [create_links(stages, value_key, nodes_by_stages)])
+        nodes=nodes_by_stage,
+        links=create_links(stages, value_key, nodes_by_stage)
     )
 
 
-def process_sankey_data(settings, resources):
+def accumulate_sankey_graph_from_rsource(accumulated_graph, resource):
+    """
+        Same as accumulate_sankey_graph but extracts the resource's sankey graph
+    :param accumulated_graph:
+    :param resource:
+    :return:
+    """
+    return accumulate_sankey_graph(
+        accumulated_graph,
+        R.item_path(['settings', 'sankey'], resource)
+    )
+
+
+def accumulate_sankey_graph(accumulated_graph, graph):
+    """
+        Given an accumulated graph, a dict of nodes and links
+        and a current Resource object, process the resource object and add the results to the accumulated graph
+    :param accumulated_graph:
+    :param nodes_by_stage: Dict of nodes by stage key. Each stage contains an array of nodes
+    :return:
+    """
+    nodes_by_stage = R.prop('nodes', graph)
+    links = R.prop('links', graph)
+
+    # Combine the nodes and link with previous accumulated_graph nodes and links
+    return dict(
+        nodes=R.concat(R.prop_or([], 'nodes', accumulated_graph), R.flatten(R.values(nodes_by_stage))),
+        # Naively create a link between every node of consecutive stages
+        links=R.concat(R.prop_or([], 'links', accumulated_graph), links)
+    )
+
+
+def index_sankey_graph(graph):
+    """
+        Once all nodes are generated for a sankey graph the nodes need indices. This updates each node with
+        and index property
+    :param graph:
+    :return: Updates graph.nodes, adding an index to each
+    """
+    for (node, i) in enumerate(graph.nodes):
+        node['index'] = i
+
+
+def process_sankey_data(resources):
     """
         Given Sankey data process it into Sankey graph data
-    :param settings: Configuration data See resource_sample.py
     :param resources: Resource instances
     :return:
     """
     return R.reduce(
-        resource_to_nodes_and_links(settings),
+        accumulate_sankey_graph,
         dict(nodes=[], links=[]),
         resources
     )

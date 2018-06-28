@@ -1,13 +1,14 @@
 import logging
 
 import rescape_graphene.ramda as R
+from app.helpers.sankey_helpers import generate_sankey_data
 from graphene.test import Client
 from snapshottest import TestCase
 from app.models import Resource
 from app.schema import schema
-from .resource_sample import data
+from .resource_sample import sample_resources
 from .resource_schema import graphql_query_data_points, graphql_update_or_create_data_point, \
-    resource_fields
+    resource_fields, graphql_query_resources, graphql_update_or_create_resource
 from .data_schema import data_fields
 
 logging.basicConfig(level=logging.DEBUG)
@@ -20,33 +21,12 @@ class ResourceTestCase(TestCase):
 
     def setUp(self):
         self.client = Client(schema)
-        Resource.objects.update_or_create(
-            defaults=dict(
-                version=Resource.VERSIONS['IMI2'],
-                data=OAKLAND_SAMPLE_DATA
-            ),
-            country='USA', state='California', city='Oakland',
-            neighborhood='Adams Pt', blockname='Grand Ave', intersc1='Bay Pl', intersc2='Park View Terrace',
-        )
-        (dp, created) = Resource.objects.update_or_create(
-            defaults=dict(
-                version=Resource.VERSIONS['IMI2'],
-                data=OSLO_SAMPLE_DATA
-            ),
-            country='Norway', state='', city='Oslo',
-            # This has to be here to prevent a duplicate with the scenario resource below the second time
-            # setUp is run
-            original=True,
-            neighborhood='Grunerlokke', blockname='Thorvold Mayers gate', intersc1='Korsgata', intersc2='Nordre gate',
-        )
-        Resource.objects.update_or_create(
-            country='Norway', state='', city='Oslo',
-            neighborhood='Grunerlokke', blockname='Thorvold Mayers gate', intersc1='Korsgata', intersc2='Nordre gate',
-            version=Resource.VERSIONS['IMI2'],
-            data=OSLO_SAMPLE_DATA,
-            original=False,
-            original_resource_id=dp.id
-        )
+
+        for resource in sample_resources:
+            # Generate our sample resources, computing and storing their Sankey graph data
+            graph = generate_sankey_data(resource)
+            resource.data.graph = graph
+            resource.save()
 
     def test_query(self):
         result = graphql_query_resources(self.client, params=dict(city='Oakland'))
