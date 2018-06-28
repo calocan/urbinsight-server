@@ -1,4 +1,33 @@
 from rescape_graphene import ramda as R
+import re
+import locale
+
+
+def string_to_float(flt):
+    # https://stackoverflow.com/questions/9227335/parse-a-string-to-floats-with-different-separators
+    # Remove anything not a digit, comma or period
+    no_cruft = re.sub(r'[^\d,.-]', '', flt)
+
+    # Split the result into parts consisting purely of digits
+    parts = re.split(r'[,.]', no_cruft)
+
+    # ...and sew them back together
+    if len(parts) == 1:
+        # No delimeters found
+        flt = parts[0]
+    elif len(parts[-1]) != 2:
+        # >= 1 delimeters found. If the length of last part is not equal to 2, assume it is not a decimal part
+        flt = ''.join(parts)
+    else:
+        flt = '%s%s%s' % (''.join(parts[0:-1]),
+                          locale.localeconv()['decimal_point'],
+                          parts[-1])
+
+    # Convert to float. Invalid values are hopefully empty strings
+    try:
+        return float(flt) if flt != '' else float(0)
+    except ValueError:
+        raise ValueError("Something is wrong with the {1}. Can't convert it to a float".format(flt))
 
 
 def stages_by_name(stages):
@@ -51,7 +80,7 @@ def resolve_location(default_location, coordinates, i):
     else:
         return dict(
             is_generalized=False,
-            location=reversed(R.map(lambda coord: float(coord), coordinates.split(',')))
+            location=list(reversed(R.map(lambda coord: string_to_float(coord), coordinates.split(','))))
         )
 
 
@@ -65,31 +94,41 @@ def create_links(stages, value_key, nodes_by_stages):
     """
 
     def process_stage(stage, i):
-        # Get the current stage as the source
-        sources = nodes_by_stages[stage.key]
+        # Get the current stage as the source if there are any in nodes_by_stage
+        sources = R.prop_or(None, R.prop('key', stage), nodes_by_stages)
         if not sources:
             return []
         # Iterate through the stages until one with nodes is found
-        target_stage = R.find(
-            lambda stage: nodes_by_stages[stage.key],
-            stages[i + 1, R.length(stages)]
-        )
+        target_stage = None
+        try:
+            target_stage = R.find(
+                # Try to find nodes matching this potential target stage. There might not be any
+                lambda stage: nodes_by_stages[R.prop('key', stage)] if R.has(R.prop('key', stage), nodes_by_stages) else None,
+                stages[i + 1: R.length(stages)]
+            )
+        except ValueError:
+            # It's coo, find errors if none is found. We really need R.first
+            pass
+
         # If no more stages contain nodes, we're done
         if not target_stage:
             return []
-        targets = nodes_by_stages[target_stage.key]
+        targets = nodes_by_stages[R.prop('key', target_stage)]
+        # Create the link with the source_node and target_node. Later we'll add
+        # in source and target that points to the nodes overall index in the graph,
+        # but we don't want to compute the overall indices yet
         return R.chain(lambda source:
                        R.map(lambda target:
                              dict(
-                                 source=source.index,
-                                 target=target.index,
-                                 value=float(R.prop(value_key, source))
+                                 source_node=source,
+                                 target_node=target,
+                                 value=string_to_float(R.prop(value_key, source))
                              ),
                              targets),
                        sources
                        )
 
-    return [process_stage(stage, i) for stage, i in enumerate(stages)]
+    return R.flatten([process_stage(stage, i) for i, stage in enumerate(stages)])
 
 
 def generate_sankey_data(resource):
@@ -132,25 +171,26 @@ def generate_sankey_data(resource):
                 # concat accum[key] or [] with the new node
                 key: R.concat(
                     R.prop_or([], key, accum),
-                    [{
-                        # Note that the value is an array so we can combine nodes with the same stage key
-                        stage_by_name[raw_node[stage_key]].key: [
-                            R.merge(
-                                raw_node,
-                                dict(
-                                    material=resource.material,
-                                    value=float(raw_node[value_key]),
-                                    type='Feature',
-                                    geometry=dict(
-                                        type='Point',
-                                        coordinates=location
-                                    ),
-                                    name=raw_node[node_name_key],
-                                    is_generalized=is_generalized,
-                                    properties={}
-                                )
-                            )]
-                    }]
+                    # Note that the value is an array so we can combine nodes with the same stage key
+                    [
+                        R.merge_dicts(
+                            raw_node,
+                            # Copy all properties from resource.data except settings and raw_data
+                            # This is for arbitrary properties defined in the data
+                            R.omit(['settings', 'raw_data'], R.prop('data', resource)),
+                            dict(
+                                value=string_to_float(R.prop(value_key, raw_node)),
+                                type='Feature',
+                                geometry=dict(
+                                    type='Point',
+                                    coordinates=location
+                                ),
+                                name=R.prop(node_name_key, raw_node),
+                                is_generalized=is_generalized,
+                                properties={}
+                            )
+                        )
+                    ]
                 )
             }
         )
@@ -163,7 +203,6 @@ def generate_sankey_data(resource):
         enumerate(raw_nodes)
     )
     return dict(
-        raw_nodes=raw_nodes,
         nodes=nodes_by_stage,
         links=create_links(stages, value_key, nodes_by_stage)
     )
@@ -178,7 +217,8 @@ def accumulate_sankey_graph(accumulated_graph, resource):
     :return:
     """
 
-    links = R.prop('links', resource)
+    links = R.item_path(['graph', 'links'], resource.data)
+    nodes_by_stage = R.item_path(['graph', 'nodes'], resource.data)
 
     # Combine the nodes and link with previous accumulated_graph nodes and links
     return dict(
@@ -190,23 +230,29 @@ def accumulate_sankey_graph(accumulated_graph, resource):
 
 def index_sankey_graph(graph):
     """
-        Once all nodes are generated for a sankey graph the nodes need indices. This updates each node with
-        and index property
+        Once all nodes are generated for a sankey graph the nodes need indices.
+        This updates each node with and index property. Links also need the node indices,
+        so each link gets source and target based on its source_node and target_node
     :param graph:
     :return: Updates graph.nodes, adding an index to each
     """
-    for (node, i) in enumerate(graph.nodes):
+    nodes = R.prop('nodes', graph)
+    for (i, node) in enumerate(nodes):
         node['index'] = i
+    for link in R.prop('links', graph):
+        link['source'] = nodes.index(R.prop('source_node', link))
+        link['target'] = nodes.index(R.prop('target_node', link))
 
 
-def process_sankey_data(resources):
+def create_sankey_graph_from_resources(resources):
     """
         Given Sankey data process it into Sankey graph data
     :param resources: Resource instances
     :return:
     """
-    return R.reduce(
+    unindexed_graph = R.reduce(
         accumulate_sankey_graph,
         dict(nodes=[], links=[]),
         resources
     )
+    return index_sankey_graph(unindexed_graph)

@@ -38,6 +38,7 @@ sample_resources = R.map(
     ),
     [
         dict(
+            name='Minerals',
             data=dict(
                 material='Minerals',
                 raw_data=[
@@ -55,6 +56,7 @@ sample_resources = R.map(
             )
         ),
         dict(
+            name='Metals',
             data=dict(
                 material='Metals',
                 raw_data=[
@@ -72,6 +74,7 @@ sample_resources = R.map(
         ),
 
         dict(
+            name='Wood',
             data=dict(
                 material='Wood',
                 raw_data=[

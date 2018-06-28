@@ -118,14 +118,15 @@ DATABASES = {
         'PORT': os.environ.get('URBINSIGHT_DB_PORT', ''),
     },
     # used to create the default db
-    'postgres': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': os.environ.get('POSTGRES_DB_USER'),
-        'PASSWORD': os.environ.get('POSTGRES_DB_PASS', ''),
-        'HOST': os.environ.get('POSTGRES_DB_HOST'),
-        'PORT': os.environ.get('POSTGRES_DB_PORT', ''),
-    }
+    # This is just used with create_dbs
+    # 'postgres': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': 'postgres',
+    #     'USER': os.environ.get('POSTGRES_DB_USER'),
+    #     'PASSWORD': os.environ.get('POSTGRES_DB_PASS', ''),
+    #     'HOST': os.environ.get('POSTGRES_DB_HOST'),
+    #     'PORT': os.environ.get('POSTGRES_DB_PORT', ''),
+    # }
 }
 
 
