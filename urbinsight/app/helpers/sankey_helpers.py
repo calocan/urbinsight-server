@@ -16,19 +16,22 @@ def aberrate_location(index, location, factor=.005):
     return [coord + factor * (-index if index % 2 else index) * (i or -1) for coord, i in enumerate(location)]
 
 
-def create_raw_nodes(columns):
+def create_raw_nodes(resource):
     """
         Creates nodes for each column from the csv
-    :param columns:
-    :return:
+    :param resource: The Resource object
+    :return: Raw node data
     """
+    columns = R.item_path(['data', 'settings', 'columns'], resource)
+    raw_data = R.item_path(['data', 'raw_data'], resource)
     return R.map(
         lambda line: R.from_pairs(
-            zip(*
+            zip(
                 columns,
-                ';'.split(line)
-                )
-        )
+                line.split(';')
+            )
+        ),
+        raw_data
     )
 
 
@@ -97,29 +100,29 @@ def generate_sankey_data(resource):
         Results can be assigned to resource.data.sankey and saved
     """
 
-    settings = resource.settings
-    stages = settings.stages
-    stage_key = settings.stage_key
-    value_key = settings.value_key
-    node_name_key = settings.node_name_key
-    default_location = settings.default_location
+    settings = R.item_path(['data', 'settings'], resource)
+    stages = R.prop('stages', settings)
+    stage_key = R.prop('stage_key', settings)
+    value_key = R.prop('value_key', settings)
+    node_name_key = R.prop('node_name_key', settings)
+    default_location = R.prop('default_location', settings)
     # A dct of stages by name
     stage_by_name = stages_by_name(stages)
 
-    def accumulate_nodes(accum, node, i):
+    def accumulate_nodes(accum, raw_node, i):
         """
             Accumulate each node, keying by the name of the node's stage key
             Since nodes share stage keys these each result is an array of nodes
         :param accum:
-        :param node:
+        :param raw_node:
         :param i:
         :return:
         """
-        location_obj = resolve_location(default_location, node.coordinates, i)
+        location_obj = resolve_location(default_location, raw_node.coordinates, i)
         location = R.prop('location', location_obj)
         is_generalized = R.prop('is_generalized', location_obj)
         # The key where then node is stored is the stage key
-        key = stage_by_name[node[stage_key]].key
+        key = stage_by_name[raw_node[stage_key]].key
 
         return R.merge(
             # Omit accum[key] since we'll concat it with the new node
@@ -130,18 +133,18 @@ def generate_sankey_data(resource):
                     R.prop_or([], key, accum),
                     [{
                         # Note that the value is an array so we can combine nodes with the same stage key
-                        stage_by_name[node[stage_key]].key: [
+                        stage_by_name[raw_node[stage_key]].key: [
                             R.merge(
-                                node,
+                                raw_node,
                                 dict(
                                     material=resource.material,
-                                    value=float(node[value_key]),
+                                    value=float(raw_node[value_key]),
                                     type='Feature',
                                     geometry=dict(
                                         type='Point',
                                         coordinates=location
                                     ),
-                                    name=node[node_name_key],
+                                    name=raw_node[node_name_key],
                                     is_generalized=is_generalized,
                                     properties={}
                                 )
@@ -151,41 +154,30 @@ def generate_sankey_data(resource):
             }
         )
 
+    raw_nodes = create_raw_nodes(resource)
     # Reduce the nodes
     nodes_by_stage = R.reduce(
         lambda accum, node_and_i: accumulate_nodes(accum, node_and_i[0], node_and_i[1]),
         {},
-        enumerate(resource.nodes)
+        enumerate(raw_nodes)
     )
     return dict(
+        raw_nodes=raw_nodes,
         nodes=nodes_by_stage,
         links=create_links(stages, value_key, nodes_by_stage)
     )
 
 
-def accumulate_sankey_graph_from_rsource(accumulated_graph, resource):
+def accumulate_sankey_graph(accumulated_graph, resource):
     """
-        Same as accumulate_sankey_graph but extracts the resource's sankey graph
-    :param accumulated_graph:
-    :param resource:
-    :return:
-    """
-    return accumulate_sankey_graph(
-        accumulated_graph,
-        R.item_path(['settings', 'sankey'], resource)
-    )
-
-
-def accumulate_sankey_graph(accumulated_graph, graph):
-    """
-        Given an accumulated graph, a dict of nodes and links
+        Given an accumulated graph and
         and a current Resource object, process the resource object and add the results to the accumulated graph
     :param accumulated_graph:
-    :param nodes_by_stage: Dict of nodes by stage key. Each stage contains an array of nodes
+    :param resource: A Resource
     :return:
     """
-    nodes_by_stage = R.prop('nodes', graph)
-    links = R.prop('links', graph)
+
+    links = R.prop('links', resource)
 
     # Combine the nodes and link with previous accumulated_graph nodes and links
     return dict(

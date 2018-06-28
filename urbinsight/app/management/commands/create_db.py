@@ -64,6 +64,9 @@ def create_dbs(password):
                     db['NAME'],
                     db['USER']
                 ))
+                cur.execute("ALTER ROLE {0} CREATEDB".format(
+                    db['USER']
+                ))
             except psycopg2.ProgrammingError as detail:
                 log.info(detail)
 

@@ -7,9 +7,8 @@ from snapshottest import TestCase
 from app.models import Resource
 from app.schema import schema
 from .resource_sample import sample_resources
-from .resource_schema import graphql_query_data_points, graphql_update_or_create_data_point, \
-    resource_fields, graphql_query_resources, graphql_update_or_create_resource
-from .data_schema import data_fields
+from .resource_schema import resource_fields, graphql_query_resources, graphql_update_or_create_resource
+from .data_schema import resource_data_fields
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -25,6 +24,7 @@ class ResourceTestCase(TestCase):
         for resource in sample_resources:
             # Generate our sample resources, computing and storing their Sankey graph data
             graph = generate_sankey_data(resource)
+            resource.data.raw_nodes = graph.raw_nodes
             resource.data.graph = graph
             resource.save()
 
