@@ -21,6 +21,8 @@ sample_resources = R.map(
                     stage_key='junctionStage',
                     # The column used for node and link values
                     value_key='annualTonnage',
+                    # The column of the node location, normally a string representing a 2 element array representing a lat/lon
+                    location_key='coordinates',
                     node_name_key='siteName',
                     stages=[
                         dict(key='source', name='Source', targets=['conversion']),

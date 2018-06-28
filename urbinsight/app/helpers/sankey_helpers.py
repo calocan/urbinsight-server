@@ -51,7 +51,7 @@ def resolve_location(default_location, coordinates, i):
     else:
         return dict(
             is_generalized=False,
-            location=reversed(R.map(lambda coord: float(coord), ','.split(coordinates)))
+            location=reversed(R.map(lambda coord: float(coord), coordinates.split(',')))
         )
 
 
@@ -104,6 +104,7 @@ def generate_sankey_data(resource):
     stages = R.prop('stages', settings)
     stage_key = R.prop('stage_key', settings)
     value_key = R.prop('value_key', settings)
+    location_key = R.prop('location_key', settings)
     node_name_key = R.prop('node_name_key', settings)
     default_location = R.prop('default_location', settings)
     # A dct of stages by name
@@ -118,11 +119,11 @@ def generate_sankey_data(resource):
         :param i:
         :return:
         """
-        location_obj = resolve_location(default_location, raw_node.coordinates, i)
+        location_obj = resolve_location(default_location, R.prop(location_key, raw_node), i)
         location = R.prop('location', location_obj)
         is_generalized = R.prop('is_generalized', location_obj)
         # The key where then node is stored is the stage key
-        key = stage_by_name[raw_node[stage_key]].key
+        key = R.prop('key', stage_by_name[raw_node[stage_key]])
 
         return R.merge(
             # Omit accum[key] since we'll concat it with the new node
@@ -157,7 +158,7 @@ def generate_sankey_data(resource):
     raw_nodes = create_raw_nodes(resource)
     # Reduce the nodes
     nodes_by_stage = R.reduce(
-        lambda accum, node_and_i: accumulate_nodes(accum, node_and_i[0], node_and_i[1]),
+        lambda accum, i_and_node: accumulate_nodes(accum, i_and_node[1], i_and_node[0]),
         {},
         enumerate(raw_nodes)
     )
