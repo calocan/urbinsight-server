@@ -37,16 +37,12 @@ StageDataType = type(
 )
 
 settings_data_fields = dict(
-    default_location=dict(type=String, type_modifier=lambda typ: List(String)),
+    default_location=dict(type=Float, type_modifier=lambda typ: List(Float)),
     columns=dict(type=String, type_modifier=lambda typ: List(typ)),
     stage_key=dict(type=String),
     value_key=dict(type=String),
     location_key=dict(type=String),
     node_name_key=dict(type=String),
-    raw_data=dict(
-        type=String,
-        type_modifier=lambda typ: List(String)
-    ),
     stages=dict(
         type=StageDataType,
         graphene_type=StageDataType,
@@ -70,6 +66,10 @@ resource_data_fields = dict(
         graphene_type=SettingsDataType,
         fields=settings_data_fields,
         type_modifier=lambda typ: List(typ)
+    ),
+    raw_data=dict(
+        type=String,
+        type_modifier=lambda typ: List(String)
     ),
     material=dict(type=String),
 )
