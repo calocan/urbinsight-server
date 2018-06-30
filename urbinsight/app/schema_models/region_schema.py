@@ -20,10 +20,10 @@ class RegionType(DjangoObjectType):
 RegionType._meta.fields['data'] = Field(RegionDataType, resolver=resolver)
 
 region_fields = merge_with_django_properties(RegionType, dict(
-    key=dict(type=graphene.String, create=REQUIRE),
-    name=dict(type=graphene.String, create=REQUIRE),
-    created_at=dict(type=graphene.DateTime),
-    updated_at=dict(type=graphene.DateTime),
+    key=dict(create=REQUIRE),
+    name=dict(create=REQUIRE),
+    created_at=dict(),
+    updated_at=dict(),
     # This refers to the RegionDataType, which is a representation of all the json fields of Region.data
     data=dict(graphene_type=RegionDataType, fields=region_data_fields, default=lambda: dict())
 ))

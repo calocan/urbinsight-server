@@ -1,39 +1,41 @@
 from rescape_graphene import ramda as R
 
+sample_settings = dict(
+    settings=dict(
+        default_location=[4.3517, 50.8503],
+        # The columns of the CSV data
+        columns=[
+            'siteName',
+            'location',
+            'coordinates',
+            'junctionStage',
+            'annualTonnage'
+        ],
+        # The column name used to name each stage
+        stage_key='junctionStage',
+        # The column used for node and link values
+        value_key='annualTonnage',
+        # The column of the node location, normally a string representing a 2 element array representing a lat/lon
+        location_key='coordinates',
+        node_name_key='siteName',
+        stages=[
+            dict(key='source', name='Source', targets=['conversion']),
+            dict(key='conversion', name='Conversion', targets=['distribution']),
+            dict(key='distribution', name='Distribution', targets=['demand']),
+            dict(key='demand', name='Demand', targets=['reconversion', 'sink']),
+            dict(key='reconversion', name='Reconversion', targets=['demand']),
+            dict(key='sink', name='Sink', targets=[])
+        ]
+    )
+)
+
 # Map the settings to merge it into each resource
 # Settings are stored in resource.data.settings
 sample_resources = R.map(
     lambda resource: R.merge_deep(
         resource,
         dict(
-            data=dict(
-                settings=dict(
-                    default_location=[4.3517, 50.8503],
-                    # The columns of the CSV data
-                    columns=[
-                        'siteName',
-                        'location',
-                        'coordinates',
-                        'junctionStage',
-                        'annualTonnage'
-                    ],
-                    # The column name used to name each stage
-                    stage_key='junctionStage',
-                    # The column used for node and link values
-                    value_key='annualTonnage',
-                    # The column of the node location, normally a string representing a 2 element array representing a lat/lon
-                    location_key='coordinates',
-                    node_name_key='siteName',
-                    stages=[
-                        dict(key='source', name='Source', targets=['conversion']),
-                        dict(key='conversion', name='Conversion', targets=['distribution']),
-                        dict(key='distribution', name='Distribution', targets=['demand']),
-                        dict(key='demand', name='Demand', targets=['reconversion', 'sink']),
-                        dict(key='reconversion', name='Reconversion', targets=['demand']),
-                        dict(key='sink', name='Sink', targets=[])
-                    ]
-                )
-            )
+            data=sample_settings
         )
     ),
     [

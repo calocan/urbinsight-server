@@ -30,6 +30,16 @@ class Query(ObjectType):
         **allowed_query_arguments(region_fields)
     )
 
+    region = graphene.Field(
+        RegionType,
+        **allowed_query_arguments(region_fields)
+    )
+
+    resources = graphene.List(
+        ResourceType,
+        **allowed_query_arguments(region_fields)
+    )
+
     resource = graphene.Field(
         ResourceType,
         **allowed_query_arguments(resource_fields)
