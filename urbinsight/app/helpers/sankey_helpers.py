@@ -103,7 +103,8 @@ def create_links(stages, value_key, nodes_by_stages):
         try:
             target_stage = R.find(
                 # Try to find nodes matching this potential target stage. There might not be any
-                lambda stage: nodes_by_stages[R.prop('key', stage)] if R.has(R.prop('key', stage), nodes_by_stages) else None,
+                lambda stage: nodes_by_stages[R.prop('key', stage)] if R.has(R.prop('key', stage),
+                                                                             nodes_by_stages) else None,
                 stages[i + 1: R.length(stages)]
             )
         except ValueError:
@@ -114,6 +115,10 @@ def create_links(stages, value_key, nodes_by_stages):
         if not target_stage:
             return []
         targets = nodes_by_stages[R.prop('key', target_stage)]
+
+        def prop_lookup(node, prop):
+            return R.prop(prop, dict(zip(node['properties'], node['property_values'])))
+
         # Create the link with the source_node and target_node. Later we'll add
         # in source and target that points to the nodes overall index in the graph,
         # but we don't want to compute the overall indices yet
@@ -122,7 +127,7 @@ def create_links(stages, value_key, nodes_by_stages):
                              dict(
                                  source_node=source,
                                  target_node=target,
-                                 value=string_to_float(R.prop(value_key, source))
+                                 value=string_to_float(prop_lookup(source, value_key))
                              ),
                              targets),
                        sources
@@ -164,6 +169,14 @@ def generate_sankey_data(resource):
         # The key where then node is stored is the stage key
         key = R.prop('key', stage_by_name[raw_node[stage_key]])
 
+        # Copy all properties from resource.data  except settings and raw_data
+        # Also grab raw_node properties
+        # This is for arbitrary properties defined in the data
+        # We put them in properties and property_values since graphql hates arbitrary key/values
+        properties = R.merge(
+            R.omit(['settings', 'raw_data'], R.prop('data', resource)),
+            raw_node
+        )
         return R.merge(
             # Omit accum[key] since we'll concat it with the new node
             R.omit([key], accum),
@@ -173,22 +186,17 @@ def generate_sankey_data(resource):
                     R.prop_or([], key, accum),
                     # Note that the value is an array so we can combine nodes with the same stage key
                     [
-                        R.merge_dicts(
-                            raw_node,
-                            # Copy all properties from resource.data except settings and raw_data
-                            # This is for arbitrary properties defined in the data
-                            R.omit(['settings', 'raw_data'], R.prop('data', resource)),
-                            dict(
-                                value=string_to_float(R.prop(value_key, raw_node)),
-                                type='Feature',
-                                geometry=dict(
-                                    type='Point',
-                                    coordinates=location
-                                ),
-                                name=R.prop(node_name_key, raw_node),
-                                is_generalized=is_generalized,
-                                properties={}
-                            )
+                        dict(
+                            value=string_to_float(R.prop(value_key, raw_node)),
+                            type='Feature',
+                            geometry=dict(
+                                type='Point',
+                                coordinates=location
+                            ),
+                            name=R.prop(node_name_key, raw_node),
+                            is_generalized=is_generalized,
+                            properties=list(R.keys(properties)),
+                            property_values=list(R.values(properties))
                         )
                     ]
                 )

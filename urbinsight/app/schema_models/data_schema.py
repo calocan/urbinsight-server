@@ -9,8 +9,6 @@ from graphene import ObjectType, String, Float, List, Field
 # Data fields are not a Django model, rather a json blob that is the field data of the Region and Resource models
 # So we list all the fields here and create a Graphene model RegionDataType and ResourceDataType
 ###
-from rescape_graphene import input_type_class
-from rescape_graphene.schema_helpers import CREATE
 
 
 def resolver_for_dict_field(resource, context):
@@ -24,7 +22,7 @@ def resolver_for_dict_field(resource, context):
     # Take the camelized keys and underscore (slugify) to get them back to python form
     selections = R.map(lambda sel: underscore(sel.name.value), context.field_asts[0].selection_set.selections)
     field_name = context.field_name
-    dct = R.pick(selections, getattr(resource, field_name))
+    dct = R.map_keys(lambda key: underscore(key), R.pick(selections, getattr(resource, field_name)))
     return namedtuple('DataTuple', R.keys(dct))(*R.values(dct))
 
 
@@ -39,8 +37,12 @@ def resolver_for_dict_list(resource, context):
     # Take the camelized keys and underscore (slugify) to get them back to python form
     selections = R.map(lambda sel: underscore(sel.name.value), context.field_asts[0].selection_set.selections)
     field_name = context.field_name
-    dcts = R.map(R.pick(selections), getattr(resource, field_name))
+    dcts = R.map(
+        lambda dct: R.map_keys(lambda key: underscore(key), R.pick(selections, dct)),
+        getattr(resource, field_name)
+    )
     return R.map(lambda dct: namedtuple('DataTuple', R.keys(dct))(*R.values(dct)), dcts)
+
 
 region_data_fields = dict(
     example=dict(type=Float)
@@ -108,18 +110,19 @@ GeometryDataType = type(
         geometry_data_fields)
 )
 
-
 node_data_fields = dict(
     name=dict(type=String),
     type=dict(type=String),
     value=dict(type=Float),
-    geometry=dict(type=GeometryDataType, graphene_type=GeometryDataType, fields=geometry_data_fields, type_modifier=lambda typ: Field(typ)),
-    location=dict(type=String),
-    material=dict(type=String),
-    siteName=dict(type=String),
+    geometry=dict(
+        type=GeometryDataType,
+        graphene_type=GeometryDataType,
+        fields=geometry_data_fields,
+        type_modifier=lambda typ: Field(typ, resolver=resolver_for_dict_field),
+    ),
+    properties=dict(type=String, type_modifier=lambda typ: List(typ)),
+    property_values=dict(type=String, type_modifier=lambda typ: List(typ)),
     coordinates=dict(type=String),
-    annualTonnage=dict(type=String),
-    junctionStage=dict(type=String),
     is_generalized=dict(type=String),
 )
 
