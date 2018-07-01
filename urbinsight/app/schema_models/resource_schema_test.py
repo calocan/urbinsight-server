@@ -76,7 +76,7 @@ class ResourceSchemaTestCase(TestCase):
         result = graphql_update_or_create_resource(self.client, values)
         assert not R.has('errors', result), R.dump_json(R.prop('errors', result))
         # look at the users added and omit the non-determinant dateJoined
-        self.assertMatchSnapshot(R.omit(omit_props, R.item_path(['data', 'createResource', 'user'], result)))
+        self.assertMatchSnapshot(R.omit(omit_props, R.item_path(['data', 'createResource'], result)))
 
     # def test_create_scenario_resource(self):
     #     # variable_value={'user': 'Peter'}
