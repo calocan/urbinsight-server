@@ -1,3 +1,4 @@
+from app.helpers.sankey_helpers import add_sankey_graph_to_resource_dict
 from app.schema_models.data_schema import ResourceDataType, resource_data_fields
 from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
 from graphene_django.types import DjangoObjectType
@@ -43,6 +44,7 @@ class UpsertResource(Mutation):
 
     def mutate(self, info, resource_data=None):
         update_or_create_values = input_type_parameters_for_update_or_create(resource_fields, resource_data)
+        add_sankey_graph_to_resource_dict(update_or_create_values['defaults'])
         resource, created = Resource.objects.update_or_create(**update_or_create_values)
         return UpsertResource(resource=resource)
 

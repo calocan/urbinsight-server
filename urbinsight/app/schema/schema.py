@@ -37,7 +37,7 @@ class Query(ObjectType):
 
     resources = graphene.List(
         ResourceType,
-        **allowed_query_arguments(region_fields)
+        **allowed_query_arguments(resource_fields)
     )
 
     resource = graphene.Field(

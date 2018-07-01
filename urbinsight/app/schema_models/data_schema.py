@@ -1,5 +1,9 @@
+from collections import namedtuple
+
 import rescape_graphene.ramda as R
-from graphene import ObjectType, String, Float, List
+from inflection import underscore
+from rescape_graphene import resolver
+from graphene import ObjectType, String, Float, List, Field
 
 ###
 # Data fields are not a Django model, rather a json blob that is the field data of the Region and Resource models
@@ -7,6 +11,36 @@ from graphene import ObjectType, String, Float, List
 ###
 from rescape_graphene import input_type_class
 from rescape_graphene.schema_helpers import CREATE
+
+
+def resolver_for_dict_field(resource, context):
+    """
+        Resolver for the data field. This extracts the desired json fields from the context
+        and creates a tuple of the field values. Graphene has no built in way for querying json types
+    :param resource:
+    :param context:
+    :return:
+    """
+    # Take the camelized keys and underscore (slugify) to get them back to python form
+    selections = R.map(lambda sel: underscore(sel.name.value), context.field_asts[0].selection_set.selections)
+    field_name = context.field_name
+    dct = R.pick(selections, getattr(resource, field_name))
+    return namedtuple('DataTuple', R.keys(dct))(*R.values(dct))
+
+
+def resolver_for_dict_list(resource, context):
+    """
+        Resolver for the data field. This extracts the desired json fields from the context
+        and creates a tuple of the field values. Graphene has no built in way for querying json types
+    :param resource:
+    :param context:
+    :return:
+    """
+    # Take the camelized keys and underscore (slugify) to get them back to python form
+    selections = R.map(lambda sel: underscore(sel.name.value), context.field_asts[0].selection_set.selections)
+    field_name = context.field_name
+    dcts = R.map(R.pick(selections), getattr(resource, field_name))
+    return R.map(lambda dct: namedtuple('DataTuple', R.keys(dct))(*R.values(dct)), dcts)
 
 region_data_fields = dict(
     example=dict(type=Float)
@@ -47,7 +81,7 @@ settings_data_fields = dict(
         type=StageDataType,
         graphene_type=StageDataType,
         fields=stage_data_fields,
-        type_modifier=lambda typ: List(typ)
+        type_modifier=lambda typ: List(typ, resolver=resolver_for_dict_list)
     )
 )
 
@@ -74,11 +108,12 @@ GeometryDataType = type(
         geometry_data_fields)
 )
 
+
 node_data_fields = dict(
     name=dict(type=String),
     type=dict(type=String),
     value=dict(type=Float),
-    geometry=dict(type=GeometryDataType, graphene_type=GeometryDataType, fields=geometry_data_fields, type_modifier=lambda typ: List(typ)),
+    geometry=dict(type=GeometryDataType, graphene_type=GeometryDataType, fields=geometry_data_fields, type_modifier=lambda typ: Field(typ)),
     location=dict(type=String),
     material=dict(type=String),
     siteName=dict(type=String),
@@ -99,8 +134,8 @@ NodeDataType = type(
 
 link_data_fields = dict(
     value=dict(type=Float),
-    source=dict(type=NodeDataType, graphene_type=NodeDataType, fields=node_data_fields, type_modifier=lambda typ: List(typ)),
-    target=dict(type=NodeDataType, graphene_type=NodeDataType, fields=node_data_fields, type_modifier=lambda typ: List(typ))
+    source=dict(type=NodeDataType, graphene_type=NodeDataType, fields=node_data_fields, type_modifier=lambda typ: Field(typ)),
+    target=dict(type=NodeDataType, graphene_type=NodeDataType, fields=node_data_fields, type_modifier=lambda typ: Field(typ))
 )
 
 LinkDataType = type(
@@ -113,8 +148,8 @@ LinkDataType = type(
 )
 
 graph_data_fields = dict(
-    links=dict(type=LinkDataType, graphene_type=LinkDataType, fields=link_data_fields, type_modifier=lambda typ: List(typ)),
-    nodes=dict(type=NodeDataType, graphene_type=NodeDataType, fields=node_data_fields, type_modifier=lambda typ: List(typ))
+    links=dict(type=LinkDataType, graphene_type=LinkDataType, fields=link_data_fields, type_modifier=lambda typ: List(typ, resolver=resolver_for_dict_list)),
+    nodes=dict(type=NodeDataType, graphene_type=NodeDataType, fields=node_data_fields, type_modifier=lambda typ: List(typ, resolver=resolver_for_dict_list))
 )
 
 GraphDataType = type(
@@ -126,21 +161,25 @@ GraphDataType = type(
         graph_data_fields)
 )
 
+
 resource_data_fields = dict(
     settings=dict(
         type=SettingsDataType,
         graphene_type=SettingsDataType,
         fields=settings_data_fields,
-        type_modifier=lambda typ: List(typ)
+        type_modifier=lambda typ: Field(typ, resolver=resolver_for_dict_field)
     ),
     raw_data=dict(
         type=String,
-        type_modifier=lambda typ: List(String)
+        type_modifier=lambda typ: List(typ)
     ),
     graph=dict(
-        type
-    )
-    material=dict(type=String),
+        type=GraphDataType,
+        graphene_type=GraphDataType,
+        fields=graph_data_fields,
+        type_modifier=lambda typ: Field(typ, resolver=resolver_for_dict_field)
+    ),
+    material=dict(type=String)
 )
 
 ResourceDataType = type(

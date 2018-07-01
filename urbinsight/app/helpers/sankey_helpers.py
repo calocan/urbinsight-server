@@ -202,8 +202,10 @@ def generate_sankey_data(resource):
         {},
         enumerate(raw_nodes)
     )
+    nodes = R.flatten(R.values(nodes_by_stage))
     return dict(
-        nodes=nodes_by_stage,
+        nodes=nodes,
+        nodes_by_stage=nodes_by_stage,
         links=create_links(stages, value_key, nodes_by_stage)
     )
 
@@ -256,3 +258,14 @@ def create_sankey_graph_from_resources(resources):
         resources
     )
     return index_sankey_graph(unindexed_graph)
+
+
+def add_sankey_graph_to_resource_dict(resource_dict):
+    """
+        Generate a sankey graph and attach it to resource.data['graph']
+    :param resource_dict: A resource instannce with enough data to generate a graph
+    :return:
+    """
+    graph = generate_sankey_data(resource_dict)
+    resource_dict['data']['graph'] = graph
+    return resource_dict
