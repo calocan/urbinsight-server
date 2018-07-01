@@ -3,7 +3,7 @@ from collections import namedtuple
 import rescape_graphene.ramda as R
 from inflection import underscore
 from rescape_graphene import resolver
-from graphene import ObjectType, String, Float, List, Field
+from graphene import ObjectType, String, Float, List, Field, Int
 
 ###
 # Data fields are not a Django model, rather a json blob that is the field data of the Region and Resource models
@@ -137,8 +137,8 @@ NodeDataType = type(
 
 link_data_fields = dict(
     value=dict(type=Float),
-    source=dict(type=NodeDataType, graphene_type=NodeDataType, fields=node_data_fields, type_modifier=lambda typ: Field(typ)),
-    target=dict(type=NodeDataType, graphene_type=NodeDataType, fields=node_data_fields, type_modifier=lambda typ: Field(typ))
+    source=dict(type=Int),
+    target=dict(type=Int),
 )
 
 LinkDataType = type(

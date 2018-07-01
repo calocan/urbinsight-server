@@ -275,5 +275,6 @@ def add_sankey_graph_to_resource_dict(resource_dict):
     :return:
     """
     graph = generate_sankey_data(resource_dict)
+    index_sankey_graph(graph)
     resource_dict['data']['graph'] = graph
     return resource_dict
