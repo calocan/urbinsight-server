@@ -28,21 +28,21 @@ def create_dbs(password):
     django_settings = __import__(os.environ['DJANGO_SETTINGS_MODULE'], fromlist=['DATABASES'])
     log.info(("create_dbs: got settings."))
     databases = django_settings.DATABASES
-    postgres = databases['postgres']
+    #used to create the default db
+    #This is just used with create_dbs
+    postgres_user = os.environ.get('POSTGRES_DB_USER')
+    postgres_pass = os.environ.get('POSTGRES_DB_PASS')
+    postgres_host = os.environ.get('POSTGRES_DB_HOST', 'localhost')
+    postgres_port = os.environ.get('POSTGRES_DB_PORT', 5432)
     for name, db in databases.items():
-        if name == 'postgres':
-            continue
         host = db['HOST']
-        user = postgres['USER']
-        postgres_password = postgres['PASSWORD']
         password = db['PASSWORD'] or password
-        port = db['PORT']
         db_name = db['NAME']
         db_type = db['ENGINE']
         # see if it is postgresql
-        if db_type.endswith('postgresql_psycopg2'):
+        if db_type.endswith('postgresql_psycopg2') or db_type.endswith('django.contrib.gis.db.backends.postgis'):
             log.info('creating database %s on %s' % (db_name, host))
-            con = psycopg2.connect(host=host, user=user, password=postgres_password, port=port, database='postgres')
+            con = psycopg2.connect(host=postgres_host, user=postgres_user, password=postgres_pass, port=postgres_port, database='postgres')
             con.set_isolation_level(0)
             cur = con.cursor()
             try:

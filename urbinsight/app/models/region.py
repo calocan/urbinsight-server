@@ -1,3 +1,7 @@
+from app.helpers.geometry_helpers import geometry_from_feature, ewkt_from_feature
+from django.contrib.gis.db import models
+from django.contrib.gis.db.models import MultiPolygonField, PolygonField
+from django.contrib.gis.geos import MultiPolygon
 from django.db.models import (
     CharField, IntegerField, Model,
     DateTimeField)
@@ -7,6 +11,15 @@ from django.contrib.postgres.fields import JSONField
 def default():
     return dict()
 
+
+default_geometry = ewkt_from_feature(
+    {
+        "type": "Feature",
+        "geometry": {
+            "type": "Polygon", "coordinates": [[[-85, -180], [85, -180], [85, 180], [-85, 180], [-85, -180]]]
+        }
+    }
+)
 
 class Region(Model):
     """
@@ -18,6 +31,7 @@ class Region(Model):
     name = CharField(max_length=50, unique=False, null=False)
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
+    location = PolygonField(null=False, default=default_geometry)
     data = JSONField(null=False, default=default)
 
     class Meta:

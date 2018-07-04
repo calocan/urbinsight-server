@@ -7,7 +7,7 @@ from app.models import Region
 from rescape_graphene import resolver
 from rescape_graphene.schema_helpers import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
     CREATE, UPDATE, input_type_parameters_for_update_or_create, input_type_fields, merge_with_django_properties
-
+import graphql_geojson
 
 class RegionType(DjangoObjectType):
     class Meta:

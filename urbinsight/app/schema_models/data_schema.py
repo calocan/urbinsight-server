@@ -2,7 +2,6 @@ from collections import namedtuple
 
 import rescape_graphene.ramda as R
 from inflection import underscore
-from rescape_graphene import resolver
 from graphene import ObjectType, String, Float, List, Field, Int
 
 ###

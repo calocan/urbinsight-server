@@ -228,11 +228,11 @@ def accumulate_sankey_graph(accumulated_graph, resource):
     """
 
     links = R.item_path(['graph', 'links'], resource.data)
-    nodes_by_stage = R.item_path(['graph', 'nodes'], resource.data)
+    nodes = R.item_path(['graph', 'nodes'], resource.data)
 
     # Combine the nodes and link with previous accumulated_graph nodes and links
     return dict(
-        nodes=R.concat(R.prop_or([], 'nodes', accumulated_graph), R.flatten(R.values(nodes_by_stage))),
+        nodes=R.concat(R.prop_or([], 'nodes', accumulated_graph), nodes),
         # Naively create a link between every node of consecutive stages
         links=R.concat(R.prop_or([], 'links', accumulated_graph), links)
     )

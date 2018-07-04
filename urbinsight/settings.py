@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'graphene_django',
     'app'
 ]
@@ -110,23 +111,13 @@ STATIC_URL = '/static/'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.environ.get('URBINSIGHT_DB_NAME', 'urbinsight'),
         'USER': os.environ.get('URBINSIGHT_DB_USER', 'urbuser'),
         'PASSWORD': os.environ.get('URBINSIGHT_DB_PASS', ''),
         'HOST': os.environ.get('URBINSIGHT_DB_HOST'),
         'PORT': os.environ.get('URBINSIGHT_DB_PORT', ''),
-    },
-    # used to create the default db
-    # This is just used with create_dbs
-    # 'postgres': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'NAME': 'postgres',
-    #     'USER': os.environ.get('POSTGRES_DB_USER'),
-    #     'PASSWORD': os.environ.get('POSTGRES_DB_PASS', ''),
-    #     'HOST': os.environ.get('POSTGRES_DB_HOST'),
-    #     'PORT': os.environ.get('POSTGRES_DB_PORT', ''),
-    # }
+    }
 }
 
 
