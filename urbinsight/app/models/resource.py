@@ -1,6 +1,8 @@
+from app.models import Region
+from django.contrib.gis.db import models
 from django.db.models import (
     CharField, IntegerField, Model,
-    DateTimeField)
+    DateTimeField, ForeignKey)
 from django.contrib.postgres.fields import JSONField
 
 
@@ -42,6 +44,7 @@ class Resource(Model):
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
     data = JSONField(null=False, default=default)
+    region = ForeignKey(to=Region, related_name='resources', null=False, on_delete=models.DO_NOTHING)
 
     class Meta:
         app_label = "app"

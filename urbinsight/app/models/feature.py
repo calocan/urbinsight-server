@@ -1,8 +1,6 @@
 from app.helpers.geometry_helpers import geometry_from_feature, ewkt_from_feature
-from django.db.models import *  # NOQA isort:skip
-from app.models.feature import Feature
 from django.contrib.gis.db import models
-from django.contrib.gis.db.models import MultiPolygonField, PolygonField, ForeignKey
+from django.contrib.gis.db.models import MultiPolygonField, PolygonField, GeometryField
 from django.contrib.gis.geos import MultiPolygon
 from django.db.models import (
     CharField, IntegerField, Model,
@@ -23,18 +21,19 @@ default_geometry = ewkt_from_feature(
     }
 )
 
-class Region(Model):
+
+class Feature(Model):
     """
-        Models a geospatial region
+        Models a geospatial feature. Location is the geometry with a type and coordinates. All other properties
+        become properties when represented in graphql or as geojson. Feature is a foreign key to classes like
+        Resource.
     """
 
-    # Unique human readable identifier for URLs, etc
-    key = CharField(max_length=20, unique=True, null=False)
-    name = CharField(max_length=50, unique=False, null=False)
+    name = CharField(max_length=50, null=True)
+    description = CharField(max_length=500, unique=False, null=True)
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
-    #boundary = ForeignKey(to=Feature, related_name='regions', null=False, on_delete=models.CASCADE)
-    data = JSONField(null=False, default=default)
+    location = GeometryField(null=False, default=default_geometry)
 
     class Meta:
         app_label = "app"

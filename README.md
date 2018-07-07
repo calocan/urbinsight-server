@@ -10,6 +10,13 @@ source virtualenvname/bin/activate
 
 # Install requirements
 $VIRTUAL_ENV/bin/pip install --no-cache-dir  --upgrade -r requirements.txt
+Add the following to the bottom $VIRTUAL_ENV/bin/activate to setup the PYTHONPATH
+
+export URBINSIGHT_BASE_DIR=/Users/andy/code/urbinsight-server
+export URBINSIGHT_PROJECT_DIR=$URBINSIGHT_BASE_DIR/urbinsight
+export URBINSIGH_WEBAPP_DIR=$URBINSIGHT_PROJECT_DIR/server/app
+export PYTHONPATH=.:$URBINSIGHT_BASE_DIR:$URBINSIGHT_PROJECT_DIR:$URBINSIGHT_WEBAPP_DIR
+
 
 # Install Postgis 
 Stop Postgres:

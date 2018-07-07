@@ -1,1 +1,1 @@
-from csrf_exempt_session_authentication import CsrfExemptSessionAuthentication
+from .csrf_exempt_session_authentication import CsrfExemptSessionAuthentication
