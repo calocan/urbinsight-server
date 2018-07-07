@@ -33,7 +33,7 @@ class Region(Model):
     name = CharField(max_length=50, unique=False, null=False)
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
-    #boundary = ForeignKey(to=Feature, related_name='regions', null=False, on_delete=models.CASCADE)
+    boundary = ForeignKey(Feature, related_name='regions', null=False, on_delete=models.CASCADE)
     data = JSONField(null=False, default=default)
 
     class Meta:

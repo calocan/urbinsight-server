@@ -2,9 +2,9 @@ import graphene
 import rescape_graphene.ramda as R
 import graphql_jwt
 from app.models import Resource, Region, Feature
-from app.schema_models.feature_schema import CreateFeature, UpdateFeature, feature_fields, FeatureType
-from app.schema_models.region_schema import UpdateRegion, CreateRegion, RegionType, region_fields
-from app.schema_models.resource_schema import ResourceType, resource_fields, CreateResource, UpdateResource
+from ..schema_models.feature_schema import CreateFeature, UpdateFeature, feature_fields, FeatureType
+from ..schema_models.region_schema import UpdateRegion, CreateRegion, RegionType, region_fields
+from ..schema_models.resource_schema import ResourceType, resource_fields, CreateResource, UpdateResource
 from graphene import ObjectType, Schema
 from graphene_django.debug import DjangoDebug
 #from graphql_jwt.decorators import login_required
@@ -12,6 +12,7 @@ from graphql_jwt.decorators import login_required
 from rescape_graphene.schema_helpers import allowed_query_arguments
 from rescape_graphene.user_schema import CreateUser, UpdateUser, UserType, user_fields
 from django.contrib.auth import get_user_model, get_user
+
 
 
 class Query(ObjectType):

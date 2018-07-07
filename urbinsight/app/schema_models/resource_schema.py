@@ -1,13 +1,16 @@
+import graphene
 from app.helpers.sankey_helpers import add_sankey_graph_to_resource_dict
+from app.schema_models.region_schema import RegionType
 from app.schema_models.data_schema import ResourceDataType, resource_data_fields
+from django.db import models
+from django.db.models import Model
 from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
 from graphene_django.types import DjangoObjectType
-from app.models import Resource
+from app.models import Resource, Region
 from rescape_graphene import resolver
 from rescape_graphene.schema_helpers import input_type_fields, REQUIRE, DENY, CREATE, \
     input_type_parameters_for_update_or_create, UPDATE, \
     guess_update_or_create, graphql_update_or_create, graphql_query, merge_with_django_properties
-
 
 class ResourceType(DjangoObjectType):
     class Meta:

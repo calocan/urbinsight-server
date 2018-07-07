@@ -8,6 +8,7 @@ from app.models import Region
 from rescape_graphene import resolver
 from rescape_graphene.schema_helpers import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
     CREATE, UPDATE, input_type_parameters_for_update_or_create, input_type_fields, merge_with_django_properties
+from .feature_schema import FeatureType, feature_fields, feature_fields_in_graphql_geojson_format
 
 
 class RegionType(DjangoObjectType):
@@ -25,7 +26,10 @@ region_fields = merge_with_django_properties(RegionType, dict(
     created_at=dict(),
     updated_at=dict(),
     # This refers to the RegionDataType, which is a representation of all the json fields of Region.data
-    data=dict(graphene_type=RegionDataType, fields=region_data_fields, default=lambda: dict())
+    data=dict(graphene_type=RegionDataType, fields=region_data_fields, default=lambda: dict()),
+    # This is a Foreign Key. Graphene generates these relationships for us, but we need it here to
+    # support our Mutation subclasses below
+    boundary=dict(graphene_type=FeatureType, fields=feature_fields_in_graphql_geojson_format)
 ))
 
 region_mutation_config = dict(

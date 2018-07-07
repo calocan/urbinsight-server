@@ -3,12 +3,15 @@ import logging
 import rescape_graphene.ramda as R
 from app.helpers.geometry_helpers import ewkt_from_feature
 from django.db import transaction
+from app.models import Region, Feature
+
+from .region_schema import graphql_query_regions, graphql_update_or_create_region
+
 from graphene.test import Client
 from snapshottest import TestCase
-from app.models import Region, Feature
+
 from app.schema import schema
 from .region_sample import sample_regions
-from .region_schema import region_fields, graphql_query_regions, graphql_update_or_create_region
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -48,15 +51,15 @@ class RegionSchemaTestCase(TestCase):
         values = dict(
             name='Luxembourg',
             key='luxembourg',
-            location=ewkt_from_feature({
-                "type": "Feature",
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [
+            boundary=dict(
+                type="Feature",
+                geometry=dict(
+                    type="Polygon",
+                    coordinates=[
                         [[49.4426671413, 5.67405195478], [50.1280516628, 5.67405195478], [50.1280516628, 6.24275109216],
                          [49.4426671413, 6.24275109216], [49.4426671413, 5.67405195478]]]
-                }
-            }),
+                )
+            ),
             data=dict()
         )
         result = graphql_update_or_create_region(self.client, values)

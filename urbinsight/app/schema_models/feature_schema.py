@@ -1,10 +1,12 @@
-from graphql_geojson import GeoJSONType
+from graphene.types.generic import GenericScalar
+from graphql_geojson import GeoJSONType, Geometry
 
 from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
 
 from app.models import Feature
 from rescape_graphene.schema_helpers import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
     CREATE, UPDATE, input_type_parameters_for_update_or_create, input_type_fields, merge_with_django_properties
+import rescape_graphene.ramda as R
 
 
 class FeatureType(GeoJSONType):
@@ -25,6 +27,7 @@ class FeatureType(GeoJSONType):
             }
         }
     """
+
     class Meta:
         model = Feature
         geojson_field = 'location'
@@ -35,8 +38,33 @@ feature_fields = merge_with_django_properties(FeatureType, dict(
     description=dict(),
     created_at=dict(),
     updated_at=dict(),
-    location=dict(create=REQUIRE),
+    location=dict(create=REQUIRE)
 ))
+
+
+def as_graphql_geojson_format(geojson_field, field_dict):
+    """
+    GeoJSONType alters the format of the class, so we need to present the fields in the way that
+    matches what it does. It would probably be better to write a function to interpret the the fields
+    of GeoJSONType, but this matches our field_dict format
+    :param geojson_field:
+    :param field_dict:
+    :return:
+    """
+    return dict(
+        geometry=dict(
+            type=Geometry,
+            fields=dict(
+                type=dict(type=String),
+                coordinates=dict(type=GenericScalar),
+            )
+        ),
+        # All properties minus the geojson_field
+        properties=dict(type=FeatureType, fields=R.omit([geojson_field], field_dict))
+    )
+
+
+feature_fields_in_graphql_geojson_format = as_graphql_geojson_format(FeatureType._meta.geojson_field, feature_fields)
 
 feature_mutation_config = dict(
     class_name='Feature',

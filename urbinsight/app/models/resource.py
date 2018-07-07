@@ -44,7 +44,7 @@ class Resource(Model):
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
     data = JSONField(null=False, default=default)
-    region = ForeignKey(to=Region, related_name='resources', null=False, on_delete=models.DO_NOTHING)
+    region = ForeignKey(Region, related_name='resources', null=False, on_delete=models.DO_NOTHING)
 
     class Meta:
         app_label = "app"
