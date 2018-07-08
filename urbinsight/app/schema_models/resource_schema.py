@@ -11,6 +11,7 @@ from rescape_graphene import resolver
 from rescape_graphene import input_type_fields, REQUIRE, DENY, CREATE, \
     input_type_parameters_for_update_or_create, UPDATE, \
     guess_update_or_create, graphql_update_or_create, graphql_query, merge_with_django_properties
+from rescape_graphene import ramda as R
 
 class ResourceType(DjangoObjectType):
     class Meta:
@@ -28,8 +29,10 @@ resource_fields = merge_with_django_properties(ResourceType, dict(
     # This refers to the Resource, which is a representation of all the json fields of Resource.data
     data=dict(graphene_type=ResourceDataType, fields=resource_data_fields, default=lambda: dict()),
     # This is a Foreign Key. Graphene generates these relationships for us, but we need it here to
-    # support our Mutation subclasses nd query_argument generation
-    region=dict(graphene_type=RegionType, fields=region_fields)
+    # support our Mutation subclasses and query_argument generation
+    # For simplicity we limit fields to id. Mutations can only us id, and a query doesn't need other
+    # details of the region--it can't query separately for that
+    region=dict(graphene_type=RegionType, fields=merge_with_django_properties(RegionType, dict(id=dict(create=REQUIRE))))
 ))
 
 resource_mutation_config = dict(

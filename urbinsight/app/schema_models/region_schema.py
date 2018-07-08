@@ -7,7 +7,7 @@ from graphene import InputObjectType, InputField, ObjectType, DateTime, String, 
 from app.models import Region
 from rescape_graphene import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
     CREATE, UPDATE, input_type_parameters_for_update_or_create, input_type_fields, merge_with_django_properties, \
-    resolver
+    resolver, DENY
 from .feature_schema import FeatureType, feature_fields, feature_fields_in_graphql_geojson_format
 
 
@@ -21,6 +21,7 @@ class RegionType(DjangoObjectType):
 RegionType._meta.fields['data'] = Field(RegionDataType, resolver=resolver)
 
 region_fields = merge_with_django_properties(RegionType, dict(
+    id=dict(create=DENY, update=REQUIRE),
     key=dict(create=REQUIRE),
     name=dict(create=REQUIRE),
     created_at=dict(),

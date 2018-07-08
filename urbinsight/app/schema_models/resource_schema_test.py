@@ -62,7 +62,7 @@ class ResourceSchemaTestCase(TestCase):
     def test_create(self):
         values = dict(
             name='Candy',
-            region=self.region,
+            region=dict(id=self.region.id),
             data=R.merge(
                 sample_settings,
                 dict(
