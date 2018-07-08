@@ -1,4 +1,9 @@
+import logging
+import sys
+import traceback
+
 import graphene
+from graphql import format_error
 from rescape_graphene import ramda as R
 import graphql_jwt
 from app.models import Resource, Region, Feature
@@ -11,6 +16,7 @@ from graphene_django.debug import DjangoDebug
 from graphql_jwt.decorators import login_required
 from rescape_graphene import allowed_query_arguments, CreateUser, UpdateUser, UserType, user_fields
 from django.contrib.auth import get_user_model, get_user
+logger = logging.getLogger('graphene')
 
 
 
@@ -112,3 +118,15 @@ class Mutation(graphene.ObjectType):
 
 
 schema = Schema(query=Query, mutation=Mutation)
+
+
+def dump_errors(result):
+    """
+        Dump any errors to in the result to stderr
+    :param result:
+    :return:
+    """
+    if R.has('errors', result):
+        for error in result['errors']:
+            logger.error(format_error(error))
+            traceback.print_tb(error['stack'], limit=10, file=sys.stderr)
