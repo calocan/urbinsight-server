@@ -4,9 +4,9 @@ from graphql_geojson import GeoJSONType, Geometry
 from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
 
 from app.models import Feature
-from rescape_graphene.schema_helpers import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
+from rescape_graphene import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
     CREATE, UPDATE, input_type_parameters_for_update_or_create, input_type_fields, merge_with_django_properties
-import rescape_graphene.ramda as R
+from rescape_graphene import ramda as R
 
 
 class FeatureType(GeoJSONType):
@@ -95,7 +95,7 @@ class CreateFeature(UpsertFeature):
 
     class Arguments:
         feature_data = type('CreateFeatureInputType', (InputObjectType,),
-                            input_type_fields(feature_fields, CREATE))(required=True)
+                            input_type_fields(feature_fields, CREATE, FeatureType))(required=True)
 
 
 class UpdateFeature(UpsertFeature):
@@ -105,7 +105,7 @@ class UpdateFeature(UpsertFeature):
 
     class Arguments:
         feature_data = type('UpdateFeatureInputType', (InputObjectType,),
-                            input_type_fields(feature_fields, UPDATE))(required=True)
+                            input_type_fields(feature_fields, UPDATE, FeatureType))(required=True)
 
 
 graphql_update_or_create_feature = graphql_update_or_create(feature_mutation_config, feature_fields)

@@ -8,7 +8,7 @@ from graphene import InputObjectType, InputField, ObjectType, DateTime, String, 
 from graphene_django.types import DjangoObjectType
 from app.models import Resource, Region
 from rescape_graphene import resolver
-from rescape_graphene.schema_helpers import input_type_fields, REQUIRE, DENY, CREATE, \
+from rescape_graphene import input_type_fields, REQUIRE, DENY, CREATE, \
     input_type_parameters_for_update_or_create, UPDATE, \
     guess_update_or_create, graphql_update_or_create, graphql_query, merge_with_django_properties
 
@@ -66,7 +66,7 @@ class CreateResource(UpsertResource):
 
     class Arguments:
         resource_data = type('CreateResourceInputType', (InputObjectType,),
-                             input_type_fields(resource_fields, CREATE))(required=True)
+                             input_type_fields(resource_fields, CREATE, ResourceType))(required=True)
 
 
 class UpdateResource(UpsertResource):
@@ -76,7 +76,7 @@ class UpdateResource(UpsertResource):
 
     class Arguments:
         resource_data = type('UpdateResourceInputType', (InputObjectType,),
-                             input_type_fields(resource_fields, UPDATE))(required=True)
+                             input_type_fields(resource_fields, UPDATE, ResourceType))(required=True)
 
 
 graphql_update_or_create_resource = graphql_update_or_create(resource_mutation_config, resource_fields)

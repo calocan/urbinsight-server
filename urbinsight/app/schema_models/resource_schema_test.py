@@ -1,6 +1,6 @@
 import logging
 
-import rescape_graphene.ramda as R
+from rescape_graphene import ramda as R
 from app.helpers.sankey_helpers import generate_sankey_data, index_sankey_graph, accumulate_sankey_graph, \
     create_sankey_graph_from_resources
 from graphene.test import Client

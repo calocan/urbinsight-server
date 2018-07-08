@@ -1,6 +1,6 @@
 import logging
 
-import rescape_graphene.ramda as R
+from rescape_graphene import ramda as R
 from app.helpers.geometry_helpers import ewkt_from_feature
 from django.db import transaction
 from app.models import Region, Feature

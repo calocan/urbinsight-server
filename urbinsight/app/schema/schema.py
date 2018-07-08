@@ -1,5 +1,5 @@
 import graphene
-import rescape_graphene.ramda as R
+from rescape_graphene import ramda as R
 import graphql_jwt
 from app.models import Resource, Region, Feature
 from ..schema_models.feature_schema import CreateFeature, UpdateFeature, feature_fields, FeatureType
@@ -9,8 +9,7 @@ from graphene import ObjectType, Schema
 from graphene_django.debug import DjangoDebug
 #from graphql_jwt.decorators import login_required
 from graphql_jwt.decorators import login_required
-from rescape_graphene.schema_helpers import allowed_query_arguments
-from rescape_graphene.user_schema import CreateUser, UpdateUser, UserType, user_fields
+from rescape_graphene import allowed_query_arguments, CreateUser, UpdateUser, UserType, user_fields
 from django.contrib.auth import get_user_model, get_user
 
 
@@ -29,32 +28,32 @@ class Query(ObjectType):
 
     regions = graphene.List(
         RegionType,
-        **allowed_query_arguments(region_fields)
+        **allowed_query_arguments(region_fields, RegionType)
     )
 
     region = graphene.Field(
         RegionType,
-        **allowed_query_arguments(region_fields)
+        **allowed_query_arguments(region_fields, RegionType)
     )
 
     resources = graphene.List(
         ResourceType,
-        **allowed_query_arguments(resource_fields)
+        **allowed_query_arguments(resource_fields, ResourceType)
     )
 
     resource = graphene.Field(
         ResourceType,
-        **allowed_query_arguments(resource_fields)
+        **allowed_query_arguments(resource_fields, ResourceType)
     )
 
     features = graphene.List(
         FeatureType,
-        **allowed_query_arguments(feature_fields)
+        **allowed_query_arguments(feature_fields, FeatureType)
     )
 
     feature = graphene.Field(
         FeatureType,
-        **allowed_query_arguments(feature_fields)
+        **allowed_query_arguments(feature_fields, FeatureType)
     )
 
     def resolve_users(self, info, **kwargs):

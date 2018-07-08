@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-import rescape_graphene.ramda as R
+from rescape_graphene import ramda as R
 from inflection import underscore
 from graphene import ObjectType, String, Float, List, Field, Int
 

@@ -5,9 +5,9 @@ from graphene_django.types import DjangoObjectType
 from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
 
 from app.models import Region
-from rescape_graphene import resolver
-from rescape_graphene.schema_helpers import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
-    CREATE, UPDATE, input_type_parameters_for_update_or_create, input_type_fields, merge_with_django_properties
+from rescape_graphene import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
+    CREATE, UPDATE, input_type_parameters_for_update_or_create, input_type_fields, merge_with_django_properties, \
+    resolver
 from .feature_schema import FeatureType, feature_fields, feature_fields_in_graphql_geojson_format
 
 
@@ -61,7 +61,7 @@ class CreateRegion(UpsertRegion):
 
     class Arguments:
         region_data = type('CreateRegionInputType', (InputObjectType,),
-                           input_type_fields(region_fields, CREATE))(required=True)
+                           input_type_fields(region_fields, CREATE, RegionType))(required=True)
 
 
 class UpdateRegion(UpsertRegion):
@@ -71,7 +71,7 @@ class UpdateRegion(UpsertRegion):
 
     class Arguments:
         region_data = type('UpdateRegionInputType', (InputObjectType,),
-                           input_type_fields(region_fields, UPDATE))(required=True)
+                           input_type_fields(region_fields, UPDATE, RegionType))(required=True)
 
 
 graphql_update_or_create_region = graphql_update_or_create(region_mutation_config, region_fields)
