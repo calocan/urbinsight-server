@@ -1,6 +1,6 @@
 import graphene
 from app.helpers.sankey_helpers import add_sankey_graph_to_resource_dict
-from app.schema_models.region_schema import RegionType
+from app.schema_models.region_schema import RegionType, region_fields
 from app.schema_models.data_schema import ResourceDataType, resource_data_fields
 from django.db import models
 from django.db.models import Model
@@ -26,7 +26,10 @@ resource_fields = merge_with_django_properties(ResourceType, dict(
     id=dict(create=DENY, update=REQUIRE),
     name=dict(create=REQUIRE),
     # This refers to the Resource, which is a representation of all the json fields of Resource.data
-    data=dict(graphene_type=ResourceDataType, fields=resource_data_fields, default=lambda: dict())
+    data=dict(graphene_type=ResourceDataType, fields=resource_data_fields, default=lambda: dict()),
+    # This is a Foreign Key. Graphene generates these relationships for us, but we need it here to
+    # support our Mutation subclasses nd query_argument generation
+    region=dict(graphene_type=RegionType, fields=region_fields)
 ))
 
 resource_mutation_config = dict(

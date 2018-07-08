@@ -11,7 +11,7 @@ from graphene.test import Client
 from snapshottest import TestCase
 
 from app.schema import schema
-from .region_sample import sample_regions
+from .region_sample import sample_regions, create_region
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -23,16 +23,6 @@ class RegionSchemaTestCase(TestCase):
 
     def setUp(self):
         self.client = Client(schema)
-
-        @transaction.atomic
-        def create_region(region_dict):
-            # Save the region with the complete data
-
-            boundary = Feature(**R.prop('boundary', region_dict))
-            boundary.save()
-            region = Region(**R.merge(region_dict, dict(boundary=boundary)))
-            region.save()
-            return region
 
         Region.objects.all().delete()
         # Convert all sample region dicts to persisted Region instances
