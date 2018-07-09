@@ -42,7 +42,6 @@ class RegionSchemaTestCase(TestCase):
             name='Luxembourg',
             key='luxembourg',
             boundary=dict(
-                type="Feature",
                 geometry=dict(
                     type="Polygon",
                     coordinates=[

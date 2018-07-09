@@ -1,3 +1,4 @@
+from app.helpers.geometry_helpers import geometry_from_geojson
 from graphene.types.generic import GenericScalar
 from graphql_geojson import GeoJSONType, Geometry
 
@@ -30,22 +31,27 @@ class FeatureType(GeoJSONType):
 
     class Meta:
         model = Feature
-        geojson_field = 'location'
+        geojson_field = 'geometry'
 
+
+geometry_fields = dict(
+    type=dict(type=String),
+    coordinates=dict(type=GenericScalar)
+)
 
 feature_fields = merge_with_django_properties(FeatureType, dict(
     name=dict(),
     description=dict(),
     created_at=dict(),
     updated_at=dict(),
-    location=dict(create=REQUIRE)
+    geometry=dict(create=REQUIRE, fields=geometry_fields)
 ))
 
 
 def as_graphql_geojson_format(geojson_field, field_dict):
     """
     GeoJSONType alters the format of the class, so we need to present the fields in the way that
-    matches what it does. It would probably be better to write a function to interpret the the fields
+    matches what it does. It would probably be better to write a function to interpret the fields
     of GeoJSONType, but this matches our field_dict format
     :param geojson_field:
     :param field_dict:
@@ -75,6 +81,24 @@ feature_mutation_config = dict(
     resolve=guess_update_or_create
 )
 
+def mutate_feature(feature_data):
+    """
+        Features are often dependent objects, so they aren't mutated separately. Hence this method is exposed
+        so other Mutation classes that contain features can update them in the database
+    :param feature_data:
+    :return:
+    """
+    # feature_data is in the graphql_geojson format, so extract it to the model format before saving
+    feature_dict = R.merge(
+        # Extract properties from the properties key
+        R.prop_or({}, 'properties', feature_data),
+        # Extract geometry to the original name (which is also geometry)
+        {FeatureType._meta.geojson_field: geometry_from_geojson(R.prop('geometry', feature_data))}
+    )
+    update_or_create_values = input_type_parameters_for_update_or_create(feature_fields, feature_dict)
+    feature, created = Feature.objects.update_or_create(**update_or_create_values)
+    return feature, created
+
 
 class UpsertFeature(Mutation):
     """
@@ -83,10 +107,8 @@ class UpsertFeature(Mutation):
     feature = Field(FeatureType)
 
     def mutate(self, info, feature_data=None):
-        update_or_create_values = input_type_parameters_for_update_or_create(feature_fields, feature_data)
-        feature, created = Feature.objects.update_or_create(**update_or_create_values)
+        feature, created = mutate_feature(feature_data)
         return UpsertFeature(feature=feature)
-
 
 class CreateFeature(UpsertFeature):
     """

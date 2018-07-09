@@ -9,7 +9,7 @@ sample_regions = [
         name='Belgium',
         boundary=dict(
             name='Belgium bounds',
-            location=ewkt_from_feature({
+            geometry=ewkt_from_feature({
             "type": "Feature",
             "geometry": {
                 "type": "Polygon",

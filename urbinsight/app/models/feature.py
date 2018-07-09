@@ -33,7 +33,7 @@ class Feature(Model):
     description = CharField(max_length=500, unique=False, null=True)
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
-    location = GeometryField(null=False, default=default_geometry)
+    geometry = GeometryField(null=False, default=default_geometry)
 
     class Meta:
         app_label = "app"

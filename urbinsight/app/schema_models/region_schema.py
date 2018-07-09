@@ -1,14 +1,15 @@
 from graphql_geojson import GeoJSONType
 
+from rescape_graphene import ramda as R
 from .data_schema import RegionDataType, region_data_fields
 from graphene_django.types import DjangoObjectType
 from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
 
-from app.models import Region
+from app.models import Region, Feature
 from rescape_graphene import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
     CREATE, UPDATE, input_type_parameters_for_update_or_create, input_type_fields, merge_with_django_properties, \
     resolver, DENY
-from .feature_schema import FeatureType, feature_fields, feature_fields_in_graphql_geojson_format
+from .feature_schema import FeatureType, feature_fields, feature_fields_in_graphql_geojson_format, mutate_feature
 
 
 class RegionType(DjangoObjectType):
@@ -50,7 +51,16 @@ class UpsertRegion(Mutation):
     region = Field(RegionType)
 
     def mutate(self, info, region_data=None):
-        update_or_create_values = input_type_parameters_for_update_or_create(region_fields, region_data)
+        # First update/create the Feature. We don't have any way of knowing if the Feature data was modified
+        # on an update so save it every time
+        boundary_data = R.prop_or(None, 'boundary', region_data)
+        if boundary_data:
+            feature, feature_created = mutate_feature(boundary_data)
+            modified_region_data = R.merge(region_data, dict(boundary=dict(id=feature.id)))
+        else:
+            modified_region_data = region_data
+
+        update_or_create_values = input_type_parameters_for_update_or_create(region_fields, modified_region_data)
         region, created = Region.objects.update_or_create(**update_or_create_values)
         return UpsertRegion(region=region)
 

@@ -6,6 +6,6 @@ django-graphql-jwt==0.1.10
 graphene==2.1.2
 graphene-django==2.1rc1
 snapshottest==0.5.0
-rescape-graphene==0.2.6
+rescape-graphene==0.2.9
 numpy==1.14.5
 django-graphql-geojson==0.1.4
