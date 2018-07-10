@@ -1,4 +1,6 @@
 from app.helpers.geometry_helpers import ewkt_from_feature
+from app.schema_models.user_sample import create_user, sample_users
+from django.contrib.auth import get_user_model
 from rescape_graphene import ramda as R
 from app.models import Feature, Region
 from django.db import transaction
@@ -24,7 +26,7 @@ sample_regions = [
 
 
 @transaction.atomic
-def create_region(region_dict):
+def create_sample_region(region_dict):
     # Save the region with the complete data
 
     boundary = Feature(**R.prop('boundary', region_dict))
@@ -32,3 +34,26 @@ def create_region(region_dict):
     region = Region(**R.merge(region_dict, dict(boundary=boundary)))
     region.save()
     return region
+
+
+def delete_sample_users():
+    get_user_model().objects.all().delete()
+
+
+def create_sample_users():
+    delete_sample_users()
+    return R.map(create_user, sample_users)
+
+
+def delete_sample_regions():
+    Region.objects.all().delete()
+
+
+def create_sample_regions():
+    delete_sample_regions()
+    users = create_sample_users()
+    # Convert all sample region dicts to persisted Region instances
+    # Give each reach an owner
+    return R.map(
+        lambda kv: create_sample_region(R.merge(kv[1], dict(owner=users[kv[0] % len(users)]))),
+        enumerate(sample_regions))

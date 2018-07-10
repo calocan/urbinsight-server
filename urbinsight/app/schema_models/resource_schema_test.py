@@ -2,18 +2,17 @@ import logging
 import sys
 import traceback
 
-from app.schema.schema import dump_errors
-from app.schema_models.region_sample import sample_regions, create_region
+from app.schema.schema import dump_errors, schema
+from app.schema_models.region_sample import sample_regions, create_sample_region, create_sample_regions
+from app.schema_models.user_sample import create_user, sample_users
+from django.contrib.auth import get_user_model
 from rescape_graphene import ramda as R
 from app.helpers.sankey_helpers import generate_sankey_data, index_sankey_graph, accumulate_sankey_graph, \
     create_sankey_graph_from_resources
 from graphene.test import Client
 from snapshottest import TestCase
-from app.models import Resource, Region
-from app.schema import schema
-from .resource_sample import sample_resources, sample_settings
-from .resource_schema import resource_fields, graphql_query_resources, graphql_update_or_create_resource
-from .data_schema import resource_data_fields
+from .resource_sample import sample_settings, delete_sample_resources, create_sample_resources
+from .resource_schema import graphql_query_resources, graphql_update_or_create_resource
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -27,31 +26,12 @@ class ResourceSchemaTestCase(TestCase):
 
     def setUp(self):
         self.client = Client(schema)
-        Resource.objects.all().delete()
-        Region.objects.all().delete()
-        self.region = create_region(R.head(sample_regions))
-
-        @R.curry
-        def create_resource(region, resource_dict):
-            # Generate our sample resources, computing and storing their Sankey graph data
-            graph = generate_sankey_data(resource_dict)
-            data = R.merge(
-                R.prop('data', resource_dict),
-                dict(
-                    graph=graph
-                )
-            )
-            # Save the resource with the complete dataa
-
-            resource = Resource(**R.merge(resource_dict, dict(region=region, data=data)))
-            resource.save()
-            return resource
-
-        Resource.objects.all().delete()
-        # Convert all sample resource dicts to persisted Resource instances
-        self.resources = R.map(create_resource(self.region), sample_resources)
+        delete_sample_resources()
+        self.resources = create_sample_resources()
+        self.regions = list(set(R.map(lambda resource: resource.region, self.resources)))
         # Create a graph for all resources
-        graph = create_sankey_graph_from_resources(self.resources)
+        # This modifies each
+        self.graph = create_sankey_graph_from_resources(self.resources)
 
     def test_query(self):
         all_result = graphql_query_resources(self.client)
@@ -65,7 +45,7 @@ class ResourceSchemaTestCase(TestCase):
     def test_create(self):
         values = dict(
             name='Candy',
-            region=dict(id=self.region.id),
+            region=dict(id=R.head(self.regions).id),
             data=R.merge(
                 sample_settings,
                 dict(

@@ -1,6 +1,7 @@
 from graphql_geojson import GeoJSONType
 
-from rescape_graphene import ramda as R
+from rescape_graphene import ramda as R, increment_prop_until_unique, user_fields, UserType, enforce_unique_props
+
 from .data_schema import RegionDataType, region_data_fields
 from graphene_django.types import DjangoObjectType
 from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
@@ -21,9 +22,14 @@ class RegionType(DjangoObjectType):
 # Django model to generate the fields
 RegionType._meta.fields['data'] = Field(RegionDataType, resolver=resolver)
 
+
+def REQUIRE(args):
+    pass
+
+
 region_fields = merge_with_django_properties(RegionType, dict(
     id=dict(create=DENY, update=REQUIRE),
-    key=dict(create=REQUIRE),
+    key=dict(create=REQUIRE, unique_with=increment_prop_until_unique(Region, None, 'key')),
     name=dict(create=REQUIRE),
     created_at=dict(),
     updated_at=dict(),
@@ -31,7 +37,9 @@ region_fields = merge_with_django_properties(RegionType, dict(
     data=dict(graphene_type=RegionDataType, fields=region_data_fields, default=lambda: dict()),
     # This is a Foreign Key. Graphene generates these relationships for us, but we need it here to
     # support our Mutation subclasses below
-    boundary=dict(graphene_type=FeatureType, fields=feature_fields_in_graphql_geojson_format)
+    boundary=dict(graphene_type=FeatureType, fields=feature_fields_in_graphql_geojson_format),
+    # Require the owner id to be specified for creates
+    owner=dict(graphene_type=UserType, fields=merge_with_django_properties(UserType, dict(id=dict(create=REQUIRE))))
 ))
 
 region_mutation_config = dict(
@@ -53,12 +61,17 @@ class UpsertRegion(Mutation):
     def mutate(self, info, region_data=None):
         # First update/create the Feature. We don't have any way of knowing if the Feature data was modified
         # on an update so save it every time
+
         boundary_data = R.prop_or(None, 'boundary', region_data)
         if boundary_data:
             feature, feature_created = mutate_feature(boundary_data)
-            modified_region_data = R.merge(region_data, dict(boundary=dict(id=feature.id)))
+            modified_boundary_data = dict(id=feature.id)
         else:
-            modified_region_data = region_data
+            modified_boundary_data = boundary_data
+
+        # Make sure that all props are unique that must be, either by modifying values or erring.
+        # Merge in the persisted boundary data
+        modified_region_data = R.merge(enforce_unique_props(region_fields, region_data), dict(boundary=modified_boundary_data))
 
         update_or_create_values = input_type_parameters_for_update_or_create(region_fields, modified_region_data)
         region, created = Region.objects.update_or_create(**update_or_create_values)

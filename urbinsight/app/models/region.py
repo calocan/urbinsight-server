@@ -1,4 +1,5 @@
 from app.helpers.geometry_helpers import geometry_from_feature, ewkt_from_feature
+from django.contrib.auth import get_user_model
 from django.db.models import *  # NOQA isort:skip
 from app.models.feature import Feature
 from django.contrib.gis.db import models
@@ -30,11 +31,12 @@ class Region(Model):
 
     # Unique human readable identifier for URLs, etc
     key = CharField(max_length=20, unique=True, null=False)
-    name = CharField(max_length=50, unique=False, null=False)
+    name = CharField(max_length=50, null=False)
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
     boundary = ForeignKey(Feature, related_name='regions', null=False, on_delete=models.CASCADE)
     data = JSONField(null=False, default=default)
+    owner = ForeignKey(get_user_model(), null=False, related_name='regions', on_delete=models.DO_NOTHING)
 
     class Meta:
         app_label = "app"

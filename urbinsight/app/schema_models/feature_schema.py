@@ -13,7 +13,9 @@ from rescape_graphene import ramda as R
 class FeatureType(GeoJSONType):
     """
         This models the Feature type for Graphene/graphql. Because of the superclass GeoJSONType,
-        the actually queryable object is in the form
+        the actually queryable object is in the form. I don't know if this is really worth while,
+        all it seems to give me is a way to query the bbox. Instead of GeoJSONType this could probably
+        just be an ObjectType and work just as well
         {
             geometry {
                 type

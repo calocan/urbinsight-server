@@ -129,4 +129,5 @@ def dump_errors(result):
     if R.has('errors', result):
         for error in result['errors']:
             logger.error(format_error(error))
-            traceback.print_tb(error['stack'], limit=10, file=sys.stderr)
+            if 'stack' in error:
+                traceback.print_tb(error['stack'], limit=10, file=sys.stderr)

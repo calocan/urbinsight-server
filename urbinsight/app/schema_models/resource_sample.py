@@ -1,3 +1,6 @@
+from app.helpers.sankey_helpers import generate_sankey_data, create_sankey_graph_from_resources
+from app.models import Resource
+from app.schema_models.region_sample import create_sample_regions
 from rescape_graphene import ramda as R
 
 sample_settings = dict(
@@ -101,3 +104,30 @@ sample_resources = R.map(
         )
     ]
 )
+
+
+def delete_sample_resources():
+    Resource.objects.all().delete()
+
+
+@R.curry
+def create_sample_resource(region, resource_dict):
+    # Generate our sample resources, computing and storing their Sankey graph data
+    graph = generate_sankey_data(resource_dict)
+    data = R.merge(
+        R.prop('data', resource_dict),
+        dict(
+            graph=graph
+        )
+    )
+    # Save the resource with the complete dataa
+    resource = Resource(**R.merge(resource_dict, dict(region=region, data=data)))
+    resource.save()
+    return resource
+
+
+def create_sample_resources():
+    regions = create_sample_regions()
+    # Convert all sample resource dicts to persisted Resource instances
+    resources = R.map(create_sample_resource(R.head(regions)), sample_resources)
+    return resources
