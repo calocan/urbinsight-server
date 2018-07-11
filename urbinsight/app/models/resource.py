@@ -35,12 +35,11 @@ def default():
         raw_data=[]
     )
 
-
 class Resource(Model):
     """
         Models a resource, such as water
     """
-    name = CharField(max_length=50, unique=True, null=False)
+    name = CharField(max_length=50, null=False)
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
     data = JSONField(null=False, default=default)

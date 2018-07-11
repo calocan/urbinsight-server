@@ -58,7 +58,7 @@ class RegionSchemaTestCase(TestCase):
         created = result_path_partial(result)
         # look at the users added and omit the non-determinant dateJoined
         self.assertMatchSnapshot(R.omit_deep(omit_props, created))
-        # Try creating the same resource again, because of the unique contraint on key and the unique_with property
+        # Try creating the same region again, because of the unique contraint on key and the unique_with property
         # on its field definition value, it will increment to luxembourg1
         new_result = graphql_update_or_create_region(self.client, values)
         assert not R.has('errors', new_result), R.dump_json(R.prop('errors', new_result))
@@ -66,36 +66,46 @@ class RegionSchemaTestCase(TestCase):
         assert created['id'] != created_too['id']
         assert created_too['key'] == 'luxembourg1'
 
-    # def test_update(self):
-    #     values = dict(
-    #         country='USA', state='California', city='San Francisco',
-    #         neighborhood='Tenderloin', blockname='Maiden Lane', intersc1='Stockton St', intersc2='Grant Ave',
-    #         version=Region.VERSIONS['IMI2'],
-    #         data=OAKLAND_SAMPLE_DATA
-    #     )
-    #
-    #     # Here is our create
-    #     create_result = graphql_update_or_create_region(self.client, values)
-    #     assert not R.has('errors', create_result), R.dump_json(R.prop('errors', create_result))
-    #
-    #     # Unfortunately Graphene returns the ID as a string, even when its an int
-    #     id = int(R.prop('id', R.item_path(['data', 'createRegion', 'region'], create_result)))
-    #
-    #     # Here is our update
-    #     result = graphql_update_or_create_region(
-    #         self.client,
-    #         dict(id=id, blockname='Maiden Ln', data=R.merge(create_result.data, dict(Alley=1)))
-    #     )
-    #     # Check against errors
-    #     assert not R.has('errors', result), R.dump_json(R.prop('errors', result))
-    #     self.assertMatchSnapshot(R.omit(omit_props, R.item_path(['data', 'updateRegion', 'data_pint'], result)))
-
-    # def test_delete(self):
-    #     self.assertMatchSnapshot(self.client.execute('''{
-    #         regions {
-    #             username,
-    #             first_name,
-    #             last_name,
-    #             password
-    #         }
-    #     }'''))
+    def test_update(self):
+        values = dict(
+            name='Luxembourg',
+            key='luxembourg',
+            boundary=dict(
+                geometry=dict(
+                    type="Polygon",
+                    coordinates=[
+                        [[49.4426671413, 5.67405195478], [50.1280516628, 5.67405195478], [50.1280516628, 6.24275109216],
+                         [49.4426671413, 6.24275109216], [49.4426671413, 5.67405195478]]]
+                )
+            ),
+            data=dict(),
+            owner=dict(id=R.head(self.users).id)
+        )
+        result = graphql_update_or_create_region(self.client, values)
+        result_path_partial = R.item_path(['data', 'createRegion', 'region'])
+        assert not R.has('errors', result), R.dump_json(R.prop('errors', result))
+        created = result_path_partial(result)
+        # look at the users added and omit the non-determinant dateJoined
+        self.assertMatchSnapshot(R.omit_deep(omit_props, created))
+        # Try updating the region, changing the coordinates
+        updated_result = graphql_update_or_create_region(
+            self.client,
+            R.merge(
+                dict(id=int(created['id']),
+                     boundary=dict(
+                         geometry=dict(
+                             type="Polygon",
+                             coordinates=[
+                                 [[59.4426671413, 5.67405195478], [50.1280516628, 5.67405195478],
+                                  [50.1280516628, 6.24275109216],
+                                  [49.4426671413, 6.24275109216], [59.4426671413, 5.67405195478]]]
+                         )
+                     ),
+                     ),
+                values)
+        )
+        assert not R.has('errors', updated_result), R.dump_json(R.prop('errors', updated_result))
+        result_path_partial = R.item_path(['data', 'updateRegion', 'region'])
+        updated = result_path_partial(updated_result)
+        assert created['id'] == updated['id']
+        assert updated['key'] == 'luxembourg'

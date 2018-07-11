@@ -1,3 +1,4 @@
+from django.db import transaction
 from graphql_geojson import GeoJSONType
 
 from rescape_graphene import ramda as R, increment_prop_until_unique, user_fields, UserType, enforce_unique_props
@@ -58,6 +59,7 @@ class UpsertRegion(Mutation):
     """
     region = Field(RegionType)
 
+    @transaction.atomic
     def mutate(self, info, region_data=None):
         # First update/create the Feature. We don't have any way of knowing if the Feature data was modified
         # on an update so save it every time

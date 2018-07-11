@@ -61,7 +61,11 @@ class UpsertResource(Mutation):
         """
         update_or_create_values = input_type_parameters_for_update_or_create(resource_fields, resource_data)
         add_sankey_graph_to_resource_dict(update_or_create_values['defaults'])
-        resource, created = Resource.objects.update_or_create(**update_or_create_values)
+        if R.prop_or(False, 'id', update_or_create_values):
+            resource, created = Resource.objects.update_or_create(**update_or_create_values)
+        else:
+            resource = Resource(**update_or_create_values['defaults'])
+            resource.save()
         return UpsertResource(resource=resource)
 
 

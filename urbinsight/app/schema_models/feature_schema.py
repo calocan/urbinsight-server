@@ -98,7 +98,12 @@ def mutate_feature(feature_data):
         {FeatureType._meta.geojson_field: geometry_from_geojson(R.prop('geometry', feature_data))}
     )
     update_or_create_values = input_type_parameters_for_update_or_create(feature_fields, feature_dict)
-    feature, created = Feature.objects.update_or_create(**update_or_create_values)
+    if R.prop_or(False, 'id', feature_data):
+        feature, created = Feature.objects.update_or_create(**update_or_create_values)
+    else:
+        feature = Feature(**update_or_create_values['defaults'])
+        feature.save()
+        created = True
     return feature, created
 
 
