@@ -1,0 +1,25 @@
+{% load render_bundle from webpack_loader %}
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Urbinsight</title>
+    <link rel="shortcut icon" href="/static/bundles/favicon.ico">
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+        const id = {{ user.id }}
+        const name = {{ user.name }}
+        window.globals = {
+            user: {
+                id: {{user.id}},
+                name: {{user.name}},
+                admin: {{user.admin}},
+                staff: {% if request.user.is_staff %}true{% else %}false{% endif %}
+            }
+        };
+    </script>
+    {% render_bundle 'main' %}
+  </body>
+</html>

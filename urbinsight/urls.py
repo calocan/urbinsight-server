@@ -19,6 +19,10 @@ from django.urls import path, include
 app_name = "urbinsight"
 
 urlpatterns = [
+    # Includes /login/, /logout/, /password..., etc https://docs.djangoproject.com/en/2.0/topics/auth/default/
+    url('^', include('django.contrib.auth.urls')),
+    # Goto the app by default
+    url(r'', include('app.urls')),
     path('admin/', admin.site.urls),
     url(r'^api/', include('app.urls'))
 ]
