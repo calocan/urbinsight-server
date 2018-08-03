@@ -6,7 +6,7 @@ from rescape_graphene import ramda as R
 sample_settings = dict(
     settings=dict(
         default_location=[4.3517, 50.8503],
-        # The columns of the CSV data
+        # The columns of the raw_data
         columns=[
             'siteName',
             'location',
@@ -35,8 +35,8 @@ sample_settings = dict(
 # Map the settings to merge it into each resource
 # Settings are stored in resource.data.settings
 sample_resources = R.map(
-    lambda resource: R.merge_deep(
-        resource,
+    lambda resource_data: R.merge_deep(
+        resource_data,
         dict(
             data=sample_settings
         )

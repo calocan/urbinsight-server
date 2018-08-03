@@ -43,6 +43,7 @@ class Resource(Model):
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
     data = JSONField(null=False, default=default)
+    # TODO we should probably have models.CASCADE here to delete a resource if the region goes away
     region = ForeignKey(Region, related_name='resources', null=False, on_delete=models.DO_NOTHING)
 
     class Meta:

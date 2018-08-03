@@ -1,19 +1,21 @@
-import graphene
-from app.helpers.sankey_helpers import add_sankey_graph_to_resource_dict
-from app.schema_models.region_schema import RegionType, region_fields
-from app.schema_models.data_schema import ResourceDataType, resource_data_fields
-from django.db import models
-from django.db.models import Model
-from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
+from graphene import Field, Mutation, InputObjectType
 from graphene_django.types import DjangoObjectType
-from app.models import Resource, Region
-from rescape_graphene import resolver
 from rescape_graphene import input_type_fields, REQUIRE, DENY, CREATE, \
     input_type_parameters_for_update_or_create, UPDATE, \
     guess_update_or_create, graphql_update_or_create, graphql_query, merge_with_django_properties
 from rescape_graphene import ramda as R
+from rescape_graphene import resolver
+
+from app.helpers.sankey_helpers import add_sankey_graph_to_resource_dict
+from app.models import Resource
+from app.schema_models.resource_data_schema import ResourceDataType, resource_data_fields
+from app.schema_models.region_schema import RegionType
+
 
 class ResourceType(DjangoObjectType):
+    """
+        ResourceType models Resource, which represents a data resource such as water, energy, material, etc
+    """
     class Meta:
         model = Resource
 
@@ -31,7 +33,7 @@ resource_fields = merge_with_django_properties(ResourceType, dict(
     # This is a Foreign Key. Graphene generates these relationships for us, but we need it here to
     # support our Mutation subclasses and query_argument generation
     # For simplicity we limit fields to id. Mutations can only us id, and a query doesn't need other
-    # details of the region--it can't query separately for that
+    # details of the region--it can query separately for that
     region=dict(graphene_type=RegionType, fields=merge_with_django_properties(RegionType, dict(id=dict(create=REQUIRE))))
 ))
 
@@ -60,6 +62,8 @@ class UpsertResource(Mutation):
         :return:
         """
         update_or_create_values = input_type_parameters_for_update_or_create(resource_fields, resource_data)
+        # Modifies defaults value to add .data.graph
+        # We could decide in the future to generate this derived data on the client, but it's easy enough to do here
         add_sankey_graph_to_resource_dict(update_or_create_values['defaults'])
         if R.prop_or(False, 'id', update_or_create_values):
             resource, created = Resource.objects.update_or_create(**update_or_create_values)

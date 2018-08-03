@@ -1,5 +1,5 @@
 from app.helpers.geometry_helpers import ewkt_from_feature
-from app.schema_models.user_sample import create_user, sample_users
+from app.schema_models.user_sample import create_sample_user, sample_users, create_sample_users
 from django.contrib.auth import get_user_model
 from rescape_graphene import ramda as R
 from app.models import Feature, Region
@@ -40,9 +40,6 @@ def delete_sample_users():
     get_user_model().objects.all().delete()
 
 
-def create_sample_users():
-    delete_sample_users()
-    return R.map(create_user, sample_users)
 
 
 def delete_sample_regions():

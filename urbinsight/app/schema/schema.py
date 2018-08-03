@@ -7,6 +7,7 @@ from graphql import format_error
 from rescape_graphene import ramda as R
 import graphql_jwt
 from app.models import Resource, Region, Feature
+from app.schema_models.user_state_schema import UserStateType
 from ..schema_models.feature_schema import CreateFeature, UpdateFeature, feature_fields, FeatureType
 from ..schema_models.region_schema import UpdateRegion, CreateRegion, RegionType, region_fields
 from ..schema_models.resource_schema import ResourceType, resource_fields, CreateResource, UpdateResource
@@ -59,6 +60,16 @@ class Query(ObjectType):
 
     feature = graphene.Field(
         FeatureType,
+        **allowed_query_arguments(feature_fields, FeatureType)
+    )
+
+    user_states = graphene.List(
+        UserStateType,
+        **allowed_query_arguments(user_state_fields, FeatureType)
+    )
+
+    user_state = graphene.Field(
+        UserStateType,
         **allowed_query_arguments(feature_fields, FeatureType)
     )
 

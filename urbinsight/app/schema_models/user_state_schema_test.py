@@ -2,38 +2,46 @@ import logging
 
 from app.schema.schema import dump_errors, schema
 from rescape_graphene import ramda as R
-from app.helpers.sankey_helpers import create_sankey_graph_from_resources
 from graphene.test import Client
 from snapshottest import TestCase
-from .resource_sample import sample_settings, delete_sample_resources, create_sample_resources
-from .resource_schema import graphql_query_resources, graphql_update_or_create_resource
+from .user_state_sample import sample_settings, delete_sample_user_states, create_sample_user_states
+from .user_state_schema import graphql_query_user_states, graphql_update_or_create_user_state
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 omit_props = ['created', 'updated']
 
 
-class ResourceSchemaTestCase(TestCase):
+class UserStateSchemaTestCase(TestCase):
     client = None
     region = None
-    resource = None
+    user_state = None
 
     def setUp(self):
         self.client = Client(schema)
-        delete_sample_resources()
-        self.resources = create_sample_resources()
-        self.regions = list(set(R.map(lambda resource: resource.region, self.resources)))
-        # Create a graph for all resources
-        # This modifies each
-        self.graph = create_sankey_graph_from_resources(self.resources)
+        delete_sample_user_states()
+        self.user_states = create_sample_user_states()
+        # Gather all unique sample users
+        self.users = list(set(R.map(
+            lambda user_state: user_state.user,
+            self.user_states
+        )))
+        # Gather all unique sample regions
+        self.regions = list(set(R.chain(
+            lambda user_state: R.item_str_path('data.regions', user_state),
+            self.user_states
+        )))
 
     def test_query(self):
-        all_result = graphql_query_resources(self.client)
-        assert not R.has('errors', all_result), R.dump_json(R.prop('errors', all_result))
-        results = graphql_query_resources(self.client, dict(name='String'), variable_values=dict(name='Minerals'))
+        all_results = graphql_query_user_states(self.client)
+        assert not R.has('errors', all_results), R.dump_json(R.prop('errors', all_results))
+        # Make sure that we can filter
+        results = graphql_query_user_states(self.client,
+                                            dict(user_id='Integer'),
+                                            variable_values=dict(user_id=self.users[0].id))
         # Check against errors
         assert not R.has('errors', results), R.dump_json(R.prop('errors', results))
-        assert 1 == R.length(R.item_path(['data', 'resources'], results))
+        assert 1 == R.length(R.item_path(['data', 'user_states'], results))
 
     def test_create(self):
         values = dict(
@@ -58,11 +66,11 @@ class ResourceSchemaTestCase(TestCase):
                 )
             )
         )
-        result = graphql_update_or_create_resource(self.client, values)
+        result = graphql_update_or_create_user_state(self.client, values)
         dump_errors(result)
         assert not R.has('errors', result), R.dump_json(R.prop('errors', result))
         # look at the users added and omit the non-determinant dateJoined
-        result_path_partial = R.item_path(['data', 'createResource', 'resource'])
+        result_path_partial = R.item_path(['data', 'createUserState', 'user_state'])
         self.assertMatchSnapshot(R.omit(omit_props, result_path_partial(result)))
 
     def test_update(self):
@@ -88,16 +96,16 @@ class ResourceSchemaTestCase(TestCase):
                 )
             )
         )
-        create_raw = graphql_update_or_create_resource(self.client, values)
+        create_raw = graphql_update_or_create_user_state(self.client, values)
         dump_errors(create_raw)
         assert not R.has('errors', create_raw), R.dump_json(R.prop('errors', create_raw))
-        result_path_partial = R.item_path(['data', 'createResource', 'resource'])
+        result_path_partial = R.item_path(['data', 'createUserState', 'user_state'])
         create_result = result_path_partial(create_raw)
 
-        update_raw = graphql_update_or_create_resource(self.client, R.merge(values, dict(name='Popcorn', id=int(create_result['id']))))
+        update_raw = graphql_update_or_create_user_state(self.client, R.merge(values, dict(name='Popcorn', id=int(create_result['id']))))
         dump_errors(update_raw)
         assert not R.has('errors', update_raw), R.dump_json(R.prop('errors', update_raw))
-        result_path_partial = R.item_path(['data', 'updateResource', 'resource'])
+        result_path_partial = R.item_path(['data', 'updateUserState', 'user_state'])
         update_result = result_path_partial(update_raw)
         # Assert same instance
         assert update_result['id'] == create_result['id']
@@ -106,7 +114,7 @@ class ResourceSchemaTestCase(TestCase):
 
     # def test_delete(self):
     #     self.assertMatchSnapshot(self.client.execute('''{
-    #         resources {
+    #         user_states {
     #             username,
     #             first_name,
     #             last_name,

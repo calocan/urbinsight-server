@@ -199,14 +199,24 @@ LOGGING = {
             'propagate': True
         },
         'graphene': {
-            'handlers': ['django_info', 'console'],
+            'handlers': ['django_error', 'console'],
             'propagate': True,
-            'level': 'DEBUG',
+            'level': 'WARNING',
         },
         'rescape_graphene': {
-            'handlers': ['django_info', 'console'],
+            'handlers': ['django_error', 'console'],
             'propagate': True,
-            'level': 'INFO'
+            'level': 'WARNING'
+        },
+        'graphql': {
+            'handlers': ['django_error', 'console'],
+            'propagate': True,
+            'level': 'WARNING'
+        },
+        'graphql-python': {
+            'handlers': ['django_error', 'console'],
+            'propagate': True,
+            'level': 'WARNING'
         }
     },
 }

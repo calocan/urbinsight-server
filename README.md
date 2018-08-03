@@ -10,9 +10,10 @@ source virtualenvname/bin/activate
 
 # Install requirements
 $VIRTUAL_ENV/bin/pip install --no-cache-dir  --upgrade -r requirements.txt
-Add the following to the bottom $VIRTUAL_ENV/bin/activate to setup the PYTHONPATH
+Add the following to the bottom $VIRTUAL_ENV/bin/activate to setup the PYTHONPATH,
+replacing the path with your own install location
 
-export URBINSIGHT_BASE_DIR=/Users/andy/code/urbinsight-server
+export URBINSIGHT_BASE_DIR=/Users/andy/code/urbinsight/urbinsight-server
 export URBINSIGHT_PROJECT_DIR=$URBINSIGHT_BASE_DIR/urbinsight
 export PYTHONPATH=.:$URBINSIGHT_BASE_DIR:$URBINSIGHT_PROJECT_DIR
 

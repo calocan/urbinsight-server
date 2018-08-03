@@ -1,6 +1,6 @@
 import logging
 
-from app.schema_models.user_sample import sample_users, create_user
+from app.schema_models.user_sample import sample_users, create_sample_user
 from django.contrib.auth import get_user_model
 from rescape_graphene import ramda as R
 from app.helpers.geometry_helpers import ewkt_from_feature

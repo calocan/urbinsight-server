@@ -1,17 +1,14 @@
 from django.db import transaction
-from graphql_geojson import GeoJSONType
-
-from rescape_graphene import ramda as R, increment_prop_until_unique, user_fields, UserType, enforce_unique_props
-
-from .data_schema import RegionDataType, region_data_fields
+from graphene import InputObjectType, Mutation, Field
 from graphene_django.types import DjangoObjectType
-from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
-
-from app.models import Region, Feature
 from rescape_graphene import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
     CREATE, UPDATE, input_type_parameters_for_update_or_create, input_type_fields, merge_with_django_properties, \
     resolver, DENY
-from .feature_schema import FeatureType, feature_fields, feature_fields_in_graphql_geojson_format, mutate_feature
+from rescape_graphene import ramda as R, increment_prop_until_unique, UserType, enforce_unique_props
+
+from app.models import Region
+from .feature_schema import FeatureType, feature_fields_in_graphql_geojson_format, mutate_feature
+from .region_data_schema import RegionDataType, region_data_fields
 
 
 class RegionType(DjangoObjectType):
@@ -22,11 +19,6 @@ class RegionType(DjangoObjectType):
 # I guess there's no way to specify a resolver upon field creation, since graphene just reads the underlying
 # Django model to generate the fields
 RegionType._meta.fields['data'] = Field(RegionDataType, resolver=resolver)
-
-
-def REQUIRE(args):
-    pass
-
 
 region_fields = merge_with_django_properties(RegionType, dict(
     id=dict(create=DENY, update=REQUIRE),
@@ -73,9 +65,13 @@ class UpsertRegion(Mutation):
 
         # Make sure that all props are unique that must be, either by modifying values or erring.
         # Merge in the persisted boundary data
-        modified_region_data = R.merge(enforce_unique_props(region_fields, region_data), dict(boundary=modified_boundary_data))
+        modified_region_data = R.merge(
+            enforce_unique_props(region_fields, region_data),
+            dict(boundary=modified_boundary_data)
+        )
 
         update_or_create_values = input_type_parameters_for_update_or_create(region_fields, modified_region_data)
+        # We can do update_or_create since we have a unique key in addition to the unique id
         region, created = Region.objects.update_or_create(**update_or_create_values)
         return UpsertRegion(region=region)
 
