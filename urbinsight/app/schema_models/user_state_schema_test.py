@@ -99,7 +99,7 @@ class UserStateSchemaTestCase(TestCase):
         user_state = create_sample_user_state(
             self.regions,
             dict(
-                username="margay",
+                username=user.username,
                 data=dict(
                     user_regions=[
                         dict(
@@ -117,8 +117,8 @@ class UserStateSchemaTestCase(TestCase):
         )
 
         # Update the zoom
-        user_state_values = user_state.__dict__
-        R.item_str_path('mapbox.viewport', R.head(R.item_str_path('data.user_regions', user_state_values))).zoom = 7
+        user_state_values = R.pick(['id', 'user_id', 'data'], user_state.__dict__)
+        R.item_str_path('mapbox.viewport', R.head(R.item_str_path('data.user_regions', user_state_values)))['zoom'] = 7
         update_result = graphql_update_or_create_user_state(self.client, user_state_values)
         dump_errors(update_result)
         assert not R.has('errors', update_result), R.dump_json(R.prop('errors', update_result))

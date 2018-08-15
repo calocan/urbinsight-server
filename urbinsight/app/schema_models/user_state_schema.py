@@ -19,7 +19,7 @@ class UserStateType(DjangoObjectType):
 # Modify data field to use the resolver.
 # I guess there's no way to specify a resolver upon field creation, since graphene just reads the underlying
 # Django model to generate the fields
-UserStateType._meta.fields['data'] = Field(UserStateDataType, resolver=resolver)
+UserStateType._meta.fields['data'] = Field(UserStateDataType, resolver=resolver('data'))
 
 user_state_fields = merge_with_django_properties(UserStateType, dict(
     id=dict(create=DENY, update=REQUIRE),

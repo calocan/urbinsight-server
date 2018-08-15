@@ -18,7 +18,7 @@ class RegionType(DjangoObjectType):
 # Modify data field to use the resolver.
 # I guess there's no way to specify a resolver upon field creation, since graphene just reads the underlying
 # Django model to generate the fields
-RegionType._meta.fields['data'] = Field(RegionDataType, resolver=resolver)
+RegionType._meta.fields['data'] = Field(RegionDataType, resolver=resolver('data'))
 
 region_fields = merge_with_django_properties(RegionType, dict(
     id=dict(create=DENY, update=REQUIRE),

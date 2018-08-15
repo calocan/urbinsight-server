@@ -23,7 +23,7 @@ class ResourceType(DjangoObjectType):
 # Modify data field to use the resolver.
 # I guess there's no way to specify a resolver upon field creation, since graphene just reads the underlying
 # Django model to generate the fields
-ResourceType._meta.fields['data'] = Field(ResourceDataType, resolver=resolver)
+ResourceType._meta.fields['data'] = Field(ResourceDataType, resolver=resolver('data'))
 
 resource_fields = merge_with_django_properties(ResourceType, dict(
     id=dict(create=DENY, update=REQUIRE),

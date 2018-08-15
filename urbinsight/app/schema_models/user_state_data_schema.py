@@ -1,6 +1,8 @@
 from rescape_graphene import ramda as R, merge_with_django_properties, REQUIRE
 from graphene import ObjectType, String, Float, List, Field, Int
-from app.helpers.data_field_helpers import resolver_for_dict_field, resolver_for_dict_list
+from app.helpers.data_field_helpers import resolver_for_dict_field, resolver_for_dict_list, \
+    model_resolver_for_dict_field
+from app.models import Region
 from app.schema_models.region_schema import RegionType
 
 
@@ -48,7 +50,7 @@ user_region_data_fields = dict(
         type=RegionType,
         graphene_type=RegionType,
         fields=merge_with_django_properties(RegionType, dict(id=dict(create=REQUIRE))),
-        type_modifier=lambda typ: Field(typ, resolver=resolver_for_dict_field)
+        type_modifier=lambda typ: Field(typ, resolver=model_resolver_for_dict_field(Region))
     ),
     # The mapbox state for the user's use of this Region
     mapbox=dict(
@@ -76,7 +78,7 @@ user_state_data_fields = dict(
         type=UserRegionDataType,
         graphene_type=UserRegionDataType,
         fields=user_region_data_fields,
-        type_modifier=lambda typ: List(typ, resolver=resolver_for_dict_field)
+        type_modifier=lambda typ: List(typ, resolver=resolver_for_dict_list)
     )
 )
 
