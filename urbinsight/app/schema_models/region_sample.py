@@ -36,9 +36,6 @@ def create_sample_region(region_dict):
     return region
 
 
-def delete_sample_users():
-    get_user_model().objects.all().delete()
-
 
 
 
@@ -46,9 +43,14 @@ def delete_sample_regions():
     Region.objects.all().delete()
 
 
-def create_sample_regions():
+def create_sample_regions(users=None):
+    """
+        Create sample regions owned by the given users or users created with create_sample_users
+    :param users:
+    :return:
+    """
     delete_sample_regions()
-    users = create_sample_users()
+    users = users or create_sample_users()
     # Convert all sample region dicts to persisted Region instances
     # Give each reach an owner
     return R.map(

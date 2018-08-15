@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from rescape_graphene import ramda as R
-from app.schema_models.region_sample import delete_sample_users
 
 # The User schema is defined in rescape-graphene, but we still need sample data
 
@@ -25,3 +24,6 @@ def create_sample_users():
     delete_sample_users()
     return R.map(create_sample_user, sample_users)
 
+
+def delete_sample_users():
+    get_user_model().objects.all().delete()

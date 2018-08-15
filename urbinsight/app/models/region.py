@@ -36,7 +36,7 @@ class Region(Model):
     updated_at = DateTimeField(auto_now=True)
     boundary = ForeignKey(Feature, related_name='regions', null=False, on_delete=models.CASCADE)
     data = JSONField(null=False, default=default)
-    owner = ForeignKey(get_user_model(), null=False, related_name='regions', on_delete=models.DO_NOTHING)
+    owner = ForeignKey(get_user_model(), null=False, related_name='regions', on_delete=models.CASCADE)
 
     class Meta:
         app_label = "app"

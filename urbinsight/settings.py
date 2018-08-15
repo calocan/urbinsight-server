@@ -206,7 +206,7 @@ LOGGING = {
         'rescape_graphene': {
             'handlers': ['django_error', 'console'],
             'propagate': True,
-            'level': 'WARNING'
+            'level': 'DEBUG'
         },
         'graphql': {
             'handlers': ['django_error', 'console'],

@@ -26,7 +26,7 @@ def resolver_for_dict_field(resource, context):
 
 def resolver_for_dict_list(resource, context):
     """
-        Resolver for the data field. This extracts the desired json fields from the context
+        Resolver for the data field that is a list. This extracts the desired json fields from the context
         and creates a tuple of the field values. Graphene has no built in way for querying json types
     :param resource:
     :param context:

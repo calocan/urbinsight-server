@@ -6,8 +6,10 @@ import graphene
 from graphql import format_error
 from rescape_graphene import ramda as R
 import graphql_jwt
-from app.models import Resource, Region, Feature
-from app.schema_models.user_state_schema import UserStateType
+from rescape_graphene.graphql_helpers.schema_helpers import stringify_query_kwargs
+
+from app.models import Resource, Region, Feature, UserState
+from app.schema_models.user_state_schema import UserStateType, user_state_fields, CreateUserState, UpdateUserState
 from ..schema_models.feature_schema import CreateFeature, UpdateFeature, feature_fields, FeatureType
 from ..schema_models.region_schema import UpdateRegion, CreateRegion, RegionType, region_fields
 from ..schema_models.resource_schema import ResourceType, resource_fields, CreateResource, UpdateResource
@@ -65,12 +67,12 @@ class Query(ObjectType):
 
     user_states = graphene.List(
         UserStateType,
-        **allowed_query_arguments(user_state_fields, FeatureType)
+        **allowed_query_arguments(user_state_fields, UserStateType)
     )
 
     user_state = graphene.Field(
         UserStateType,
-        **allowed_query_arguments(feature_fields, FeatureType)
+        **allowed_query_arguments(user_state_fields, UserStateType)
     )
 
     def resolve_users(self, info, **kwargs):
@@ -84,26 +86,40 @@ class Query(ObjectType):
 
         return user
 
-    def resolve_resources(self, info, **kwargs):
+    def resolve_user_states(self, info, **kwargs):
         # Small correction here to change the data filter to data__contains to handle any json
         # https://docs.djangoproject.com/en/2.0/ref/contrib/postgres/fields/#std:fieldlookup-hstorefield.contains
-        return Resource.objects.filter(
-            **R.map_keys(lambda key: 'data__contains' if R.equals('data', key) else key, kwargs))
+        return UserState.objects.filter(
+            **stringify_query_kwargs(UserState, kwargs)
+        )
 
+    def resolve_user_state(self, info, **kwargs):
+        return UserState.objects.get(
+            **stringify_query_kwargs(UserState, kwargs)
+        )
+
+    def resolve_resources(self, info, **kwargs):
+        return Resource.objects.filter(
+            **stringify_query_kwargs(Resource, kwargs)
+        )
 
     def resolve_resource(self, info, **kwargs):
-        return Resource.objects.get(**kwargs)
-
+        return Resource.objects.get(
+            **stringify_query_kwargs(Resource, kwargs)
+        )
 
     def resolve_regions(self, info, **kwargs):
         # Small correction here to change the data filter to data__contains to handle any json
         # https://docs.djangoproject.com/en/2.0/ref/contrib/postgres/fields/#std:fieldlookup-hstorefield.contains
         return Region.objects.filter(
-            **R.map_keys(lambda key: 'data__contains' if R.equals('data', key) else key, kwargs))
+            **stringify_query_kwargs(Region, kwargs)
+        )
 
 
     def resolve_region(self, info, **kwargs):
-        return Region.objects.get(**kwargs)
+        return Region.objects.get(
+            **stringify_query_kwargs(Region, kwargs)
+        )
 
 
     def resolve_features(self, info, **kwargs):
@@ -126,6 +142,8 @@ class Mutation(graphene.ObjectType):
     update_resource = UpdateResource.Field()
     create_feature = CreateFeature.Field()
     update_feature = UpdateFeature.Field()
+    create_user_state = CreateUserState.Field()
+    update_user_state = UpdateUserState.Field()
 
 
 schema = Schema(query=Query, mutation=Mutation)
