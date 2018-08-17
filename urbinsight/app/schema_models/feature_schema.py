@@ -1,8 +1,8 @@
-from app.helpers.geometry_helpers import geometry_from_geojson
+from rescape_graphene import geometry_from_geojson
 from graphene.types.generic import GenericScalar
 from graphql_geojson import GeoJSONType, Geometry
 
-from graphene import InputObjectType, InputField, ObjectType, DateTime, String, Mutation, Field
+from graphene import InputObjectType,   String, Mutation, Field
 
 from app.models import Feature
 from rescape_graphene import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \

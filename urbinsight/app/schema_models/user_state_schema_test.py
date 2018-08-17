@@ -116,16 +116,21 @@ class UserStateSchemaTestCase(TestCase):
             )
         )
 
+        user_state_values = dict(
+            user=R.pick(['id'], user_state.user.__dict__),
+            data=user_state.data,
+            id=user_state.id
+        )
         # Update the zoom
-        user_state_values = R.pick(['id', 'user_id', 'data'], user_state.__dict__)
         R.item_str_path('mapbox.viewport', R.head(R.item_str_path('data.user_regions', user_state_values)))['zoom'] = 7
         update_result = graphql_update_or_create_user_state(self.client, user_state_values)
         dump_errors(update_result)
         assert not R.has('errors', update_result), R.dump_json(R.prop('errors', update_result))
         # Assert same instance
-        assert update_result['id'] == user_state_values['id']
+        updated_user_state = R.item_str_path('data.updateUserState.userState', update_result)
+        assert updated_user_state['id'] == str(user_state_values['id'])
         # Assert the viewport updated
-        assert R.item_str_path('data.user_regions.0.mapbox.viewport.zoom') == 7
+        assert R.item_str_path('data.userRegions.0.mapbox.viewport.zoom', updated_user_state) == 7
 
     # def test_delete(self):
     #     self.assertMatchSnapshot(self.client.execute('''{

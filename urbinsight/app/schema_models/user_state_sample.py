@@ -1,9 +1,7 @@
-from app.helpers.geometry_helpers import ewkt_from_feature
+
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
 from rescape_graphene import ramda as R
-from app.models import Feature, Region, UserState
-from django.db import transaction
+from app.models import  UserState
 
 from app.schema_models.region_sample import create_sample_regions
 from app.schema_models.user_sample import create_sample_users

@@ -58,6 +58,7 @@ class UpsertUserState(Mutation):
         update_or_create_values = input_type_parameters_for_update_or_create(user_state_fields, user_state_data)
         # We can do update_or_create since we have a unique user_id in addition to the unique id
         user_state, created = UserState.objects.update_or_create(**update_or_create_values)
+        return UpsertUserState(user_state=user_state)
 
 
 class CreateUserState(UpsertUserState):

@@ -1,11 +1,6 @@
 import logging
 
-from app.schema_models.user_sample import sample_users, create_sample_user
-from django.contrib.auth import get_user_model
 from rescape_graphene import ramda as R
-from app.helpers.geometry_helpers import ewkt_from_feature
-from django.db import transaction
-from app.models import Region, Feature
 
 from .region_schema import graphql_query_regions, graphql_update_or_create_region
 
@@ -13,7 +8,7 @@ from graphene.test import Client
 from snapshottest import TestCase
 
 from app.schema import schema
-from .region_sample import sample_regions, create_sample_region, create_sample_regions
+from .region_sample import  create_sample_regions
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

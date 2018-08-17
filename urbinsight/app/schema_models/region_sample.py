@@ -1,7 +1,5 @@
-from app.helpers.geometry_helpers import ewkt_from_feature
-from app.schema_models.user_sample import create_sample_user, sample_users, create_sample_users
-from django.contrib.auth import get_user_model
-from rescape_graphene import ramda as R
+from app.schema_models.user_sample import create_sample_users
+from rescape_graphene import ramda as R, ewkt_from_feature
 from app.models import Feature, Region
 from django.db import transaction
 

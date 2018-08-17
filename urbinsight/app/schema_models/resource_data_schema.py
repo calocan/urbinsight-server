@@ -1,6 +1,5 @@
-from rescape_graphene import ramda as R
+from rescape_graphene import ramda as R, resolver_for_dict_field, resolver_for_dict_list
 from graphene import ObjectType, String, Float, List, Field, Int
-from app.helpers.data_field_helpers import resolver_for_dict_field, resolver_for_dict_list
 
 stage_data_fields = dict(
     key=dict(type=String),

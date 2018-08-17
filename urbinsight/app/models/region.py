@@ -1,12 +1,10 @@
-from app.helpers.geometry_helpers import geometry_from_feature, ewkt_from_feature
 from django.contrib.auth import get_user_model
-from django.db.models import *  # NOQA isort:skip
+
 from app.models.feature import Feature
 from django.contrib.gis.db import models
-from django.contrib.gis.db.models import MultiPolygonField, PolygonField, ForeignKey
-from django.contrib.gis.geos import MultiPolygon
+from django.contrib.gis.db.models import  ForeignKey
 from django.db.models import (
-    CharField, IntegerField, Model,
+    CharField,  Model,
     DateTimeField)
 from django.contrib.postgres.fields import JSONField
 
@@ -15,7 +13,10 @@ def default():
     return dict()
 
 
-default_geometry = ewkt_from_feature(
+def default_geometry():
+    # Prevent loading from rescape_graphene before Django models are loaded
+    from rescape_graphene import ewkt_from_feature
+    ewkt_from_feature(
     {
         "type": "Feature",
         "geometry": {

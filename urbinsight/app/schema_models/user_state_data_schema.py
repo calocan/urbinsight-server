@@ -1,7 +1,5 @@
-from rescape_graphene import ramda as R, merge_with_django_properties, REQUIRE
-from graphene import ObjectType, String, Float, List, Field, Int
-from app.helpers.data_field_helpers import resolver_for_dict_field, resolver_for_dict_list, \
-    model_resolver_for_dict_field
+from rescape_graphene import ramda as R, merge_with_django_properties, REQUIRE, resolver_for_dict_field, resolver_for_dict_list, model_resolver_for_dict_field
+from graphene import ObjectType,  Float, List, Field, Int
 from app.models import Region
 from app.schema_models.region_schema import RegionType
 

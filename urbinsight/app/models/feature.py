@@ -1,18 +1,15 @@
-from app.helpers.geometry_helpers import geometry_from_feature, ewkt_from_feature
-from django.contrib.gis.db import models
-from django.contrib.gis.db.models import MultiPolygonField, PolygonField, GeometryField
-from django.contrib.gis.geos import MultiPolygon
+from django.contrib.gis.db.models import  GeometryField
 from django.db.models import (
-    CharField, IntegerField, Model,
+    CharField,  Model,
     DateTimeField)
-from django.contrib.postgres.fields import JSONField
 
 
 def default():
     return dict()
 
-
-default_geometry = ewkt_from_feature(
+def default_geometry():
+    from rescape_graphene import ewkt_from_feature
+    return ewkt_from_feature(
     {
         "type": "Feature",
         "geometry": {
@@ -33,7 +30,7 @@ class Feature(Model):
     description = CharField(max_length=500, unique=False, null=True)
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
-    geometry = GeometryField(null=False, default=default_geometry)
+    geometry = GeometryField(null=False, default=lambda: default_geometry())
 
     class Meta:
         app_label = "app"
