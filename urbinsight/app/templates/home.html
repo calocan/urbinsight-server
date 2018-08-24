@@ -9,12 +9,10 @@
   <body>
     <div id="app"></div>
     <script>
-        const id = {{ user.id }}
-        const name = {{ user.name }}
         window.globals = {
             user: {
                 id: {{user.id}},
-                name: {{user.name}},
+                name: '{{user.name}}',
                 admin: {{user.admin}},
                 staff: {% if request.user.is_staff %}true{% else %}false{% endif %}
             }
