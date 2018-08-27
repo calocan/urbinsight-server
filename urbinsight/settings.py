@@ -139,6 +139,7 @@ DATABASES = {
 }
 
 
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'urbinsight.CsrfExemptSessionAuthentication',
