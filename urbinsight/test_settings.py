@@ -1,6 +1,6 @@
 # File: ./backend/backend/test_settings.py
 
-from .settings import *  # NOQA
+from urbinsight.settings import *  # NOQA
 
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',

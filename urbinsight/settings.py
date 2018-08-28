@@ -24,6 +24,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '&%s&tr2-g__wen85dix504i$rda1ew_3+1l4$7yhg_#oe6so^@'
 
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -142,7 +143,7 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'urbinsight.CsrfExemptSessionAuthentication',
+        'urbinsight.csrf_exempt_session_authentication.CsrfExemptSessionAuthentication',
         'rest_framework.authentication.BasicAuthentication'
     ),
     'DEFAULT_PERMISSION_CLASSES': (

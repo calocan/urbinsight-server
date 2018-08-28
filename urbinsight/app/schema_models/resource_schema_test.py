@@ -1,5 +1,7 @@
 import logging
 
+import pytest
+
 from app.schema.schema import dump_errors, schema
 from rescape_graphene import ramda as R
 from app.helpers.sankey_helpers import create_sankey_graph_from_resources
@@ -12,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 omit_props = ['created', 'updated']
 
-
+@pytest.mark.django_db
 class ResourceSchemaTestCase(TestCase):
     client = None
     region = None

@@ -78,7 +78,7 @@ class Query(ObjectType):
     def resolve_users(self, info, **kwargs):
         return get_user_model().objects.filter(**kwargs)
 
-    def resolve_current_user(self, info):
+    def resolve_user(self, info):
         context = info.context
         user = get_user(context)
         if not user:

@@ -1,5 +1,6 @@
 import logging
 
+import pytest
 from rescape_graphene import ramda as R
 
 from .region_schema import graphql_query_regions, graphql_update_or_create_region
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 omit_props = ['createdAt', 'updatedAt']
 
 
+@pytest.mark.django_db
 class RegionSchemaTestCase(TestCase):
     client = None
 

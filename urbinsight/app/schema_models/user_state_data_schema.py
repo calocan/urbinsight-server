@@ -1,8 +1,11 @@
-from rescape_graphene import ramda as R, merge_with_django_properties, REQUIRE, resolver_for_dict_field, resolver_for_dict_list, model_resolver_for_dict_field
+from django.contrib.auth import get_user_model
+from rescape_graphene import ramda as R, merge_with_django_properties, REQUIRE, resolver_for_dict_field, \
+    resolver_for_dict_list, model_resolver_for_dict_field, UserType
 from graphene import ObjectType,  Float, List, Field, Int
+#from app.models import Region
+#from app.schema_models.region_schema import RegionType
 from app.models import Region
 from app.schema_models.region_schema import RegionType
-
 
 viewport_data_fields = dict(
     latitude=dict(type=Float),

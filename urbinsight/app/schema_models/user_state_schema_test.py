@@ -1,5 +1,6 @@
 import logging
 
+import pytest
 from django.contrib.auth.hashers import make_password
 
 from app.models import UserState, Region
@@ -17,7 +18,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 omit_props = ['created', 'updated']
 
-
+@pytest.mark.django_db
 class UserStateSchemaTestCase(TestCase):
     client = None
     region = None
@@ -49,7 +50,10 @@ class UserStateSchemaTestCase(TestCase):
         assert not R.has('errors', all_results), R.dump_json(R.prop('errors', all_results))
 
     def test_filter_query(self):
-        # Make sure that we can filter
+        # Make sure that we can filter. Here we are filtered on the User related to UserState
+        # That's why we need the complex class UserTypeofUserStateTypeRelatedReadInputType
+        # I'd like this to just be UserReadInputType but Graphene forces us to use unique types for input classes
+        # throughout the schema, even if they represent the same underlying model class or json blob structure
         results = graphql_query_user_states(self.client,
                                             dict(user='UserTypeofUserStateTypeRelatedReadInputType'),
                                             variable_values=dict(user=R.pick(['id'], self.users[0].__dict__)))
@@ -87,7 +91,8 @@ class UserStateSchemaTestCase(TestCase):
         result = graphql_update_or_create_user_state(self.client, values)
         dump_errors(result)
         assert not R.has('errors', result), R.dump_json(R.prop('errors', result))
-        self.assertMatchSnapshot(R.omit(omit_props, result))
+        # Don't worry about ids since they can be different as we write more tests
+        self.assertMatchSnapshot(R.omit_deep(omit_props + ['id'], result))
 
     def test_update(self):
         # Create the sample User
