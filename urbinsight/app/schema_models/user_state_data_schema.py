@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
-from rescape_graphene import ramda as R, merge_with_django_properties, REQUIRE, resolver_for_dict_field, \
+from rescape_python_helpers import ramda as R
+from rescape_graphene import merge_with_django_properties, REQUIRE, resolver_for_dict_field, \
     resolver_for_dict_list, model_resolver_for_dict_field, UserType
 from graphene import ObjectType,  Float, List, Field, Int
 #from app.models import Region
@@ -44,7 +45,7 @@ MapboxDataType = type(
 
 user_region_data_fields = dict(
     # References a Region.
-    # For simplicity we limit fields to id. Mutations can only us id, and a query doesn't need other
+    # For simplicity we limit fields to id. Mutations can only use id, and a query doesn't need other
     # details of the region--it can query separately for that. We could offer all fields in a query only
     # version of these fields
     region=dict(

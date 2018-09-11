@@ -3,7 +3,7 @@ from graphene_django.types import DjangoObjectType
 from rescape_graphene import input_type_fields, REQUIRE, DENY, CREATE, \
     input_type_parameters_for_update_or_create, UPDATE, \
     guess_update_or_create, graphql_update_or_create, graphql_query, merge_with_django_properties
-from rescape_graphene import ramda as R
+from rescape_python_helpers import ramda as R
 from rescape_graphene import resolver
 
 from app.helpers.sankey_helpers import add_sankey_graph_to_resource_dict

@@ -1,5 +1,5 @@
 from app.schema_models.user_sample import create_sample_users
-from rescape_graphene import ramda as R, ewkt_from_feature
+from rescape_python_helpers import ramda as R, ewkt_from_feature
 from app.models import Feature, Region
 from django.db import transaction
 

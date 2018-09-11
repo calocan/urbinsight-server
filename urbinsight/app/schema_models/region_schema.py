@@ -4,7 +4,8 @@ from graphene_django.types import DjangoObjectType
 from rescape_graphene import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
     CREATE, UPDATE, input_type_parameters_for_update_or_create, input_type_fields, merge_with_django_properties, \
     resolver, DENY
-from rescape_graphene import ramda as R, increment_prop_until_unique, UserType, enforce_unique_props
+from rescape_python_helpers import ramda as R
+from rescape_graphene import increment_prop_until_unique, UserType, enforce_unique_props
 
 from app.models import Region
 from .feature_schema import FeatureType, feature_fields_in_graphql_geojson_format, mutate_feature

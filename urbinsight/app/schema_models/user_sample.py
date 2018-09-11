@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
-from rescape_graphene import ramda as R
+from rescape_python_helpers import ramda as R
 
 # The User schema is defined in rescape-graphene, but we still need sample data
 

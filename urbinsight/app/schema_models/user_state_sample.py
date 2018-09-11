@@ -1,6 +1,6 @@
 
 from django.contrib.auth import get_user_model
-from rescape_graphene import ramda as R
+from rescape_python_helpers import ramda as R
 from app.models import  UserState
 
 from app.schema_models.region_sample import create_sample_regions

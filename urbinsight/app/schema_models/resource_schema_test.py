@@ -3,7 +3,7 @@ import logging
 import pytest
 
 from app.schema.schema import dump_errors, schema
-from rescape_graphene import ramda as R
+from rescape_python_helpers import ramda as R
 from app.helpers.sankey_helpers import create_sankey_graph_from_resources
 from graphene.test import Client
 from snapshottest import TestCase

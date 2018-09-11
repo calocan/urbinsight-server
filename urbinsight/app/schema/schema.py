@@ -4,7 +4,7 @@ import traceback
 
 import graphene
 from graphql import format_error
-from rescape_graphene import ramda as R
+from rescape_python_helpers import ramda as R
 import graphql_jwt
 from rescape_graphene.graphql_helpers.schema_helpers import stringify_query_kwargs
 

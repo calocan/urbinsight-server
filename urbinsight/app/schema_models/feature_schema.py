@@ -1,4 +1,4 @@
-from rescape_graphene import geometry_from_geojson
+from rescape_python_helpers import geometry_from_geojson
 from graphene.types.generic import GenericScalar
 from graphql_geojson import GeoJSONType, Geometry
 
@@ -7,7 +7,7 @@ from graphene import InputObjectType,   String, Mutation, Field
 from app.models import Feature
 from rescape_graphene import REQUIRE, graphql_update_or_create, graphql_query, guess_update_or_create, \
     CREATE, UPDATE, input_type_parameters_for_update_or_create, input_type_fields, merge_with_django_properties
-from rescape_graphene import ramda as R
+from rescape_python_helpers import ramda as R
 
 
 class FeatureType(GeoJSONType):

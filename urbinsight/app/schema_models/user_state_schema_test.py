@@ -3,9 +3,9 @@ import logging
 import pytest
 from django.contrib.auth.hashers import make_password
 
-from app.models import UserState, Region
+from app.models import Region
 from app.schema.schema import dump_errors, schema
-from rescape_graphene import ramda as R
+from rescape_python_helpers import ramda as R
 from graphene.test import Client
 from snapshottest import TestCase
 
@@ -17,6 +17,7 @@ from .user_state_schema import graphql_query_user_states, graphql_update_or_crea
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 omit_props = ['created', 'updated']
+
 
 @pytest.mark.django_db
 class UserStateSchemaTestCase(TestCase):

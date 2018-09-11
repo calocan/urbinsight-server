@@ -1,7 +1,7 @@
 from app.helpers.sankey_helpers import generate_sankey_data, create_sankey_graph_from_resources
 from app.models import Resource
 from app.schema_models.region_sample import create_sample_regions
-from rescape_graphene import ramda as R
+from rescape_python_helpers import ramda as R
 
 sample_settings = dict(
     settings=dict(
