@@ -7,18 +7,24 @@ from graphql import format_error
 from rescape_python_helpers import ramda as R
 import graphql_jwt
 from rescape_graphene.graphql_helpers.schema_helpers import stringify_query_kwargs
+from rescape_region.models import UserState, Region
+from rescape_region.schema_models.feature_collection_schema import FeatureCollection, feature_collection_fields, \
+    FeatureCollectionType, CreateFeatureCollection, UpdateFeatureCollection
+from rescape_region.schema_models.region_schema import region_fields, RegionType, CreateRegion, UpdateRegion
+from rescape_region.schema_models.user_state_schema import user_state_fields, UserStateType, CreateUserState, \
+    UpdateUserState
 
-from app.models import Resource, Region, Feature, UserState
-from app.schema_models.user_state_schema import UserStateType, user_state_fields, CreateUserState, UpdateUserState
-from ..schema_models.feature_schema import CreateFeature, UpdateFeature, feature_fields, FeatureType
-from ..schema_models.region_schema import UpdateRegion, CreateRegion, RegionType, region_fields
+from app.models import Resource
 from ..schema_models.resource_schema import ResourceType, resource_fields, CreateResource, UpdateResource
 from graphene import ObjectType, Schema
 from graphene_django.debug import DjangoDebug
-#from graphql_jwt.decorators import login_required
 from graphql_jwt.decorators import login_required
 from rescape_graphene import allowed_query_arguments, CreateUser, UpdateUser, UserType, user_fields
 from django.contrib.auth import get_user_model, get_user
+
+from app.models.resource import Resource
+from app.schema_models.resource_schema import resource_fields, ResourceType, CreateResource, UpdateResource
+
 logger = logging.getLogger('graphene')
 
 
@@ -55,14 +61,14 @@ class Query(ObjectType):
         **allowed_query_arguments(resource_fields, ResourceType)
     )
 
-    features = graphene.List(
-        FeatureType,
-        **allowed_query_arguments(feature_fields, FeatureType)
+    feature_collections = graphene.List(
+        FeatureCollectionType,
+        **allowed_query_arguments(feature_collection_fields, FeatureCollectionType)
     )
 
     feature = graphene.Field(
-        FeatureType,
-        **allowed_query_arguments(feature_fields, FeatureType)
+        FeatureCollectionType,
+        **allowed_query_arguments(feature_collection_fields, FeatureCollectionType)
     )
 
     user_states = graphene.List(
@@ -123,10 +129,10 @@ class Query(ObjectType):
 
 
     def resolve_features(self, info, **kwargs):
-        return Feature.objects.filter(**kwargs)
+        return FeatureCollection.objects.filter(**kwargs)
 
     def resolve_feature(self, info, **kwargs):
-        return Feature.objects.get(**kwargs)
+        return FeatureCollection.objects.get(**kwargs)
 
 
 class Mutation(graphene.ObjectType):
@@ -140,8 +146,8 @@ class Mutation(graphene.ObjectType):
     update_region = UpdateRegion.Field()
     create_resource = CreateResource.Field()
     update_resource = UpdateResource.Field()
-    create_feature = CreateFeature.Field()
-    update_feature = UpdateFeature.Field()
+    create_feature_collection = CreateFeatureCollection.Field()
+    update_feature_collection = UpdateFeatureCollection.Field()
     create_user_state = CreateUserState.Field()
     update_user_state = UpdateUserState.Field()
 

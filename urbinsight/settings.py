@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'graphene_django',
     'corsheaders',
     'app',
+    'rescape_region',
     'webpack_loader'
 ]
 

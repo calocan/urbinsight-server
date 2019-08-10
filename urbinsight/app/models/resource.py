@@ -1,9 +1,9 @@
-from app.models import Region
 from django.contrib.gis.db import models
 from django.db.models import (
     CharField, IntegerField, Model,
     DateTimeField, ForeignKey)
 from django.contrib.postgres.fields import JSONField
+from rescape_region.models import Region
 
 
 def default():
@@ -34,6 +34,7 @@ def default():
         # CSV converted to dicts. Each dict contains column values as indicated in settings.columns
         raw_data=[]
     )
+
 
 class Resource(Model):
     """

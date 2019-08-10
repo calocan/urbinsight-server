@@ -8,8 +8,11 @@ python3 -m venv virtualenvname
 Activate it
 source virtualenvname/bin/activate
 
-# Install requirements
-$VIRTUAL_ENV/bin/pip install --no-cache-dir  --upgrade -r requirements.txt
+# Install pur (if needed) to update requirements
+pip install pur
+
+# Update and Install requirements
+pur -r requirements.txt && $VIRTUAL_ENV/bin/pip install --no-cache-dir  --upgrade -r requirements.txt
 Add the following to the bottom $VIRTUAL_ENV/bin/activate to setup the PYTHONPATH,
 replacing the path with your own install location
 
@@ -30,13 +33,13 @@ $ createdb  <db name>
 $ psql <db name>
 > CREATE EXTENSION postgis;
 Make sure you switch to db_name before running CREATE EXTENSION postgis
-Note that for testing, the database user must be a superuser to create the test_post
+Note that for testing, the database user must be a superuser to create the test databse
 $ psql postgres
 =# ALTER ROLE urbuser SUPERUSER;
 Make sure to never do this in production, or unset with
 =# ALTER ROLE urbuser NO_SUPERUSER;
 
-Note that I found on OSX that this missed up my virtualenv installation and pip installation,
+Note that I found on OSX that this messed up my virtualenv installation and pip installation,
 so I had to reinstall pip after and recreate my virtualenv. Hopefully that was a one-off incident
 Start Postgres
 pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start
@@ -50,6 +53,7 @@ where dbname, username, and pw can be what you want if it matches those in setti
 Create the user in settings.py with the matching password provided, since we normally omit it from
 settings.py
 python3 manage.py create_db urbpasswd
+
 
 Migrate to create the database tables
 python3 manage.py migrate

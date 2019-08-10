@@ -1,11 +1,11 @@
-from django.http import HttpResponse
-from rest_framework import exceptions
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-from graphene_django.views import GraphQLView
-import simplejson as json
 from django.shortcuts import render
 
 def home(request):
+    """
+        This view exists until we stop relying on Django for client rendering.
+    :param request:
+    :return:
+    """
     is_admin = 'Admin' in [g.name for g in request.user.groups.all()]
     return render(request, 'home.html', {
         'user': {

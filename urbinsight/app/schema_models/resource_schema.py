@@ -5,11 +5,11 @@ from rescape_graphene import input_type_fields, REQUIRE, DENY, CREATE, \
     guess_update_or_create, graphql_update_or_create, graphql_query, merge_with_django_properties
 from rescape_python_helpers import ramda as R
 from rescape_graphene import resolver
+from rescape_region.schema_models.region_schema import RegionType
 
 from app.helpers.sankey_helpers import add_sankey_graph_to_resource_dict
-from app.models import Resource
+from app.models.resource import Resource
 from app.schema_models.resource_data_schema import ResourceDataType, resource_data_fields
-from app.schema_models.region_schema import RegionType
 
 
 class ResourceType(DjangoObjectType):

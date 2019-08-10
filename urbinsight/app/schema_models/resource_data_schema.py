@@ -59,6 +59,7 @@ node_data_fields = dict(
     name=dict(type=String),
     type=dict(type=String),
     value=dict(type=Float),
+    # TODO this should be a rescape_region FeatureCollection type to hold full geojson
     geometry=dict(
         type=GeometryDataType,
         graphene_type=GeometryDataType,
