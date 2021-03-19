@@ -1,6 +1,6 @@
 django==2.0.6
 psycopg2-binary==2.7.5
-djangorestframework==3.8.2
+djangorestframework==3.11.2
 djangorestframework-jwt==1.11.0
 django-graphql-jwt==0.1.13
 graphene==2.1.3
